@@ -3,6 +3,9 @@ import App from './App.vue'
 import vuetify from './plugins/vuetify'
 
 Vue.config.productionTip = false
+// Vue.config.errorHandler = err => {
+//   console.log('Exception: ', err)
+// }
 
 new Vue({
   vuetify,
