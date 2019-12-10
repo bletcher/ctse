@@ -2,7 +2,7 @@
   <v-app>
     <v-container fluid>
       <v-row align="center">
-        <v-col class="d-flex" cols="12" sm="6">
+        <v-col class="d-flex" cols="6" sm="3">
           <v-select
             :items="dataFileNames"
             v-model="selectedFileName"
@@ -14,12 +14,16 @@
     <chunk-chart></chunk-chart> -->
         </v-col>
       </v-row>
+      <v-content>
+        <timeseries-chart :data="filledData" v-if="filledData"></timeseries-chart>
+      </v-content>
     </v-container>
   </v-app>
 </template>
 
 <script>
 import * as d3 from 'd3'
+import TimeseriesChart from '@/components/TimeseriesChart'
 
 const formatters = {
   mdy: d3.timeFormat('%B %d, %Y'),
@@ -30,6 +34,7 @@ export default {
   name: 'App',
 
   components: {
+    TimeseriesChart
   },
   data: () => ({
     rawData: [],
@@ -40,9 +45,9 @@ export default {
   }),
   computed: {
     filledData () {
-      console.log('filledData: start')
+      console.log('filledData:start')
 
-      let combined = []
+      let filled = []
       let startIndex = 0
 
       // get date range for all data. Will fill in missing observations
@@ -51,30 +56,29 @@ export default {
       // get all dates in dataByDay
       const dataByDayDates = this.dataByDay.map(d => d.key)
 
-      console.log('rawDataDates', rawDataFullRange, dataByDayDates)
+      // console.log('rawDataDates', rawDataFullRange, dataByDayDates)
 
       // Loop over all dates and fill missing dates
       for (let i = 0; i < rawDataFullRange.length; i++) {
         let dateIncludedTF = dataByDayDates.includes(formatters.mdy(rawDataFullRange[i]))
-        if (i % 1000 === 0) console.log('second', i, dateIncludedTF, this.rawData.length, startIndex)
+        // if (i % 1000 === 0) console.log('second', i, dateIncludedTF, this.rawData.length, startIndex)
 
         if (!dateIncludedTF) { // missing data
-          console.log('in !')
+          // console.log('in !')
           let dataFromDataByDayOfYear = this.dataByDayOfYear.find(d => +d.key === +formatters.julian(rawDataFullRange[i])) // not so slow because only searching through 365 lines
-          combined.push({
+          filled.push({
             date: rawDataFullRange[i],
             dayOfYear: +formatters.julian(rawDataFullRange[i]),
             value: dataFromDataByDayOfYear.movingMean,
             missingData: true })
-        } else { // existing data in rawData
+        } else { // data exist in dataByDay
           for (let j = startIndex; j < dataByDayDates.length; j++) {
-            // console.log(i,j,formatters.mdy(rawDataFullRange[i]), dataByDayDates[j])
             if (formatters.mdy(rawDataFullRange[i]) === dataByDayDates[j]) {
               startIndex++
-              combined.push({
+              filled.push({
                 date: rawDataFullRange[i],
                 dayOfYear: +formatters.julian(rawDataFullRange[i]),
-                value: dataByDayDates[j].value,
+                value: this.dataByDay[j].value,
                 missingData: false
               })
               break
@@ -82,8 +86,8 @@ export default {
           }
         }
       }
-      console.log('filledData: end', combined)
-      return combined
+      console.log('filledData:end', filled)
+      return Object.freeze(filled)
     },
     chunkData () {
       // filledData + brushExtent -> chunked data
@@ -131,9 +135,9 @@ export default {
     // this.getData()
   },
   watch: {
-    rawData () {
-      console.log('watch:rawData', this.rawData)
-      this.initializeCharts()
+    filledData () {
+      console.log('watch:filledData')
+      // this.initializeCharts()
     },
     selectedFileName () {
       this.getData()
@@ -151,6 +155,7 @@ export default {
       } else if (this.selectedFileName === 'mitchellFromSHEDS.csv') {
         parseDate = d3.timeParse('%-m/%-d/%Y %H:%M')
       }
+
       return d3.csv('data/' + this.selectedFileName, d => {
         d.date = parseDate(d.date)
         d.day = formatters.mdy(d.date)
@@ -163,14 +168,19 @@ export default {
           this.rawData = Object.freeze(dat)
         })
         .catch(error => console.error(error))
-    },
+    }
+    /*
     initializeCharts () {
-      console.log('initializeCharts')
+      console.log('Start:initializeCharts')
+      initializeTimeSeriesChart()
+      // this.updateTimeSeriesChart()
 
       // .on("brush", (brushExtent) => {
       //   this.$emit('brushed', brushExtent)
       // })
-    }
+
+      console.log('End:initializeCharts')
+    } */
   }
 }
 </script>
