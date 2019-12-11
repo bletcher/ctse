@@ -22,7 +22,7 @@ export default {
     widthMax: 960,
     heightMax: 100,
     margin: {
-      top: 20,
+      top: 10,
       right: 50,
       bottom: 20,
       left: 40
@@ -49,8 +49,12 @@ export default {
   },
   computed: {
     width () { return this.widthMax - this.margin.left - this.margin.right },
-    height () { return this.heightMax - this.margin.top - this.margin.bottom }
-
+    height () { return this.heightMax - this.margin.top - this.margin.bottom },
+    brush () {
+      return d3.brushX()
+        .extent([[0, 0], [this.width, this.height]])
+        .on('brush end', this.brushed)
+    }
   },
   methods: {
     initializeBrushChart () {
@@ -89,10 +93,10 @@ export default {
         .attr('transform', 'translate(0,' + this.height + ')')
         .call(this.axes.x);      
 
-      // this.svgElements.context.append('g')
-      //  .attr('class', 'brush')
-      //  .call(brush)
-      //  .call(brush.move, x.range())
+      this.svgElements.context.append('g')
+        .attr('class', 'brush')
+        .call(this.brush)
+        .call(this.brush.move, this.scales.x.range())
 
       console.log('initializeBrushChart:end')
     },
@@ -101,8 +105,32 @@ export default {
         .defined(d => !isNaN(d.value))
         .x(d => scales.x(d.date))
         .y(d => scales.y(d.value))
+    },
+    brushTemp () {
+      return d3.brushX()
+        .extent([[0, 0], [this.width, this.height]])
+        .on('brush end', this.brushed)
+    },
+    brushed () {
+    //  console.log('in brushed', d3.event.sourceEvent)
+      if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return
+      let from = 'brushed'
+
+      // get new date range
+      let eventType = d3.event.sourceEvent
+      let s = d3.event.selection || this.scales.x.range()
+      let sDates = s.map(this.scales.x.invert, this.scales.x)
+      this.scales.x.domain(sDates)
+console.log("in brushed", sDates)
+
+      // dataAll.dataCFD = getCumulFilteredDate(dataAll.dataCombined, x.domain()[0], x.domain()[1]); 
+      // emptyCumulAll()
+      // updateCumulAll(dataAll.dataCFD)
+      // updateFilterChunk(sDates)
+      // updateChunks(sDates, s)
+      // render(s, from, eventType)
     }
   }
-} 
+}
 
 </script>
