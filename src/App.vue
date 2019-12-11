@@ -1,29 +1,46 @@
 <template>
   <v-app>
-    <v-container fluid>
-      <v-row align="center">
-        <v-col class="d-flex" cols="6" sm="3">
-          <v-select
-            :items="dataFileNames"
-            v-model="selectedFileName"
-            label="Data files"
-            solo
-          ></v-select>
-<!--    <timeseries-chart :extent="brushExtent" :data="filledData" v-if="filledData"></timeseries-chart>
-    <brush-chart :extent="brushExtent" @brushed="onBrush"></brush-chart>
-    <chunk-chart></chunk-chart> -->
-        </v-col>
-      </v-row>
-      <v-content>
-        <timeseries-chart :data="filledData" v-if="filledData"></timeseries-chart>
-      </v-content>
-    </v-container>
+      <v-container fluid>
+        <v-row align="center">
+          <v-col class="d-flex" cols="6" sm="3">
+            <v-select
+              :items="dataFileNames"
+              v-model="selectedFileName"
+              label="Data files"
+              solo
+            ></v-select>
+  <!--    <timeseries-chart :extent="brushExtent" :data="filledData" v-if="filledData"></timeseries-chart>
+      <brush-chart :extent="brushExtent" @brushed="onBrush"></brush-chart>
+      <chunk-chart></chunk-chart> -->
+          </v-col>
+        </v-row>
+        <v-content>
+          <v-container fluid>
+            <v-layout row>
+              <v-flex grow-shrink-0>
+                <v-card>
+                  <timeseries-chart :filledData="filledData" v-if="filledData"></timeseries-chart>
+                </v-card>
+              </v-flex>
+            </v-layout>
+            <v-layout row>
+              <v-flex grow-shrink-0>
+                <v-card>
+                  <brush-chart :filledData="filledData" v-if="filledData"></brush-chart>
+                </v-card>
+              </v-flex>
+            </v-layout>
+        </v-container>
+        </v-content>
+      </v-container>
+    
   </v-app>
 </template>
 
 <script>
 import * as d3 from 'd3'
 import TimeseriesChart from '@/components/TimeseriesChart'
+import BrushChart from '@/components/BrushChart'
 
 const formatters = {
   mdy: d3.timeFormat('%B %d, %Y'),
@@ -34,7 +51,8 @@ export default {
   name: 'App',
 
   components: {
-    TimeseriesChart
+    TimeseriesChart,
+    BrushChart
   },
   data: () => ({
     rawData: [],
