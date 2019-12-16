@@ -19,14 +19,23 @@
             <v-layout row>
               <v-flex grow-shrink-0>
                 <v-card>
-                  <timeseries-chart :filledData="filledData" v-if="filledData"></timeseries-chart>
+                  <timeseries-chart
+                    :filledData="filledData"
+                    v-if="filledData"
+                    :extent="brushExtent">
+                  </timeseries-chart>
                 </v-card>
               </v-flex>
             </v-layout>
             <v-layout row>
               <v-flex grow-shrink-0>
                 <v-card>
-                  <brush-chart :filledData="filledData" v-if="filledData"></brush-chart>
+                  <brush-chart
+                    :filledData="filledData"
+                    v-if="filledData"
+                    :extent="brushExtent"
+                    @brushed="onBrush">
+                  </brush-chart>
                 </v-card>
               </v-flex>
             </v-layout>
@@ -72,8 +81,6 @@ export default {
 
       // get all dates in dataByDay
       const dataByDayDates = this.dataByDay.map(d => d.key)
-
-      // console.log('rawDataDates', rawDataFullRange, dataByDayDates)
 
       // Loop over all dates and fill missing dates
       for (let i = 0; i < rawDataFullRange.length; i++) {
@@ -149,7 +156,6 @@ export default {
     }
   },
   mounted () {
-    // this.getData()
   },
   watch: {
     filledData () {
@@ -164,6 +170,7 @@ export default {
     onBrush (extent) {
       this.brushExtent = extent
     },
+
     getData () {
       // for now
       let parseDate = null
@@ -186,18 +193,6 @@ export default {
         })
         .catch(error => console.error(error))
     }
-    /*
-    initializeCharts () {
-      console.log('Start:initializeCharts')
-      initializeTimeSeriesChart()
-      // this.updateTimeSeriesChart()
-
-      // .on("brush", (brushExtent) => {
-      //   this.$emit('brushed', brushExtent)
-      // })
-
-      console.log('End:initializeCharts')
-    } */
   }
 }
 </script>

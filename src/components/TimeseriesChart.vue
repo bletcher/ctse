@@ -14,6 +14,11 @@ export default {
       type: Array,
       required: false,
       defaults: () => []
+    },
+    extent: {
+      type: Array,
+      required: false,
+      defaults: () => []
     }
   },
 
@@ -31,7 +36,8 @@ export default {
       x: null,
       y: null,
       xCFD: null,
-      yCFD: null
+      yCFD: null,
+      xBrush: null
     },
     axes: {
       y: null,
@@ -43,7 +49,20 @@ export default {
     },
     chartElements: {
       dot: null
-    }
+    },
+    brushedData: [],
+    dataFilledCFD: [],
+    minCumulAll: [],
+    minOfMinCumul: null,
+    maxCumulAll: [],
+    maxOfMaxCumul: null,
+    filterDaysForRect: [],
+    oneDay: 24 * 60 * 60 * 1000,
+    numChunks: null,
+    chunkCounters: null,
+    chunkDaysForRect: [],
+    dataChunks: [],
+    chunkMeans: []
   }),
   mounted () {
     // this.initializeTimeSeriesChart()
@@ -51,12 +70,14 @@ export default {
   watch: {
     'filledData' () {
       this.initializeTimeSeriesChart()
+    },
+    'extent' () {
+      this.updateTimeseriesChart()
     }
   },
   computed: {
     width () { return this.widthMax - this.margin.left - this.margin.right },
     height () { return this.heightMax - this.margin.top - this.margin.bottom }
-
   },
   methods: {
     initializeTimeSeriesChart () {
@@ -72,11 +93,13 @@ export default {
       this.scales.y = d3.scaleLinear().range([this.height, 0])
       this.scales.xCFD = d3.scaleTime().range([0, this.width])
       this.scales.yCFD = d3.scaleLinear().range([this.height, 0])
+      this.scales.xBrush = d3.scaleTime().range([0, this.width])
 
       this.scales.x.domain(d3.extent(this.filledData, d => d.date))
       this.scales.y.domain(d3.extent(this.filledData, d => d.value)).nice()
       this.scales.xCFD.domain(d3.extent(this.filledData, d => d.date))
       this.scales.yCFD.domain(d3.extent(this.filledData, d => d.value)).nice()
+      this.scales.xBrush.domain(d3.extent(this.filledData, d => d.date))
 
       this.axes.x = d3.axisBottom(this.scales.x).ticks(this.width / 80).tickSizeOuter(0)
 
@@ -147,13 +170,8 @@ export default {
         .attr('class', 'axis axis--y')
         .call(this.axes.y)
 
-      let dataFilledCFD = this.getCumulFilteredDate(this.filledData, this.scales.x.domain()[0], this.scales.x.domain()[1])
-      let maxCFD = d3.max(dataFilledCFD, d => d.cumulValue)
-      let minCFD = d3.min(dataFilledCFD, d => d.cumulValue)
-      this.scales.yCFD.domain([minCFD, maxCFD]).nice()
-
       this.svgElements.focus.append('path')
-        .datum(dataFilledCFD)
+        .datum(this.filledData)
         .attr('class', 'lineCFD')
         .attr('fill', 'none')
         .attr('stroke', 'red')
@@ -179,13 +197,6 @@ export default {
         .call(this.axes.yCFD)
 
       console.log('initializeTimeSeriesChart:end')
-    },
-    updateTimeseriesChart () {
-      console.log('initializeTimeseriesChart:start', this.filledData)
-      // this.scales.x.domain(d3.extent(this., d => d.date))
-      // this.scales.y.domain(d3.extent(this., d => d.value)).nice()
-
-      console.log('initializeTimeseriesChart:end')
     },
     getCumulFilteredDate (dataIn, minDate, maxDate, chunkCounter) {
       let data = dataIn.slice() // make a copy
@@ -239,6 +250,12 @@ export default {
     //    this.parentNode.appendChild(this)
     //  })
     },
+    lineChunks (scales) {
+      return d3.line()
+        .defined(d => !isNaN(d.value))
+        .x(d => scales.x(d.date2))
+        .y(d => scales.yCFD(d.cumulValue))
+    },
     moved (d) {
       let xPos = this.scales.x.invert(d3.event.layerX - this.margin.left)
       // let yPos = this.scales.yCFD.invert(d3.event.layerY)
@@ -249,6 +266,232 @@ export default {
 
       this.chartElements.dot.attr('transform', `translate(${this.scales.x(d[i0].date2)},${this.scales.yCFD(d[i0].cumulValue)})`) // .moveToFront()
       this.chartElements.dot.select('text').text(minYear) // .moveToFront()
+    },
+    updateTimeseriesChart () {
+      console.log('updateTimeseriesChart:start')
+      this.scales.x.domain(this.extent)
+      this.brushedData = this.getCumulFilteredDate(this.filledData, this.extent[0], this.extent[1])
+      this.scales.y.domain(d3.extent(this.brushedData, d => d.value)).nice()
+
+      this.emptyCumulAll()
+      this.updateCumulAll(this.brushedData)
+      this.updateFilterChunk() // change name of this to updateDaysForRect
+      this.updateChunks()
+      this.render()
+
+      console.log('updateTimeseriesChart:end')
+    },
+    updateCumulAll (dat) {
+      this.maxCumulAll.push(this.getMaxCumul(dat))
+      this.minCumulAll.push(this.getMinCumul(dat))
+    },
+    emptyCumulAll () {
+      this.maxCumulAll = []
+      this.minCumulAll = []
+    },
+    getMaxCumul (dat) {
+      return d3.max(dat, d => d.cumulValue)
+    },
+    getMinCumul (dat) {
+      return d3.min(dat, d => d.cumulValue)
+    },
+    updateFilterChunk () {
+      this.filterDaysForRect = []
+      this.filterDaysForRect.push({
+        start: this.scales.xBrush(this.extent[0]),
+        width: this.scales.xBrush(this.extent[1]) - this.scales.xBrush(this.extent[0])
+      })
+    },
+    updateChunks () {
+      console.log('updateChunks:start')
+      // let numDaysX2 = Math.round(Math.abs((x2.domain()[1] - x2.domain()[0]) / this.oneDay))
+      let numDaysBrush = Math.round(Math.abs((this.extent[1] - this.extent[0]) / this.oneDay))
+      let numDaysBeginningToBrush = Math.round(Math.abs((this.extent[0] - this.scales.xBrush.domain()[0]) / this.oneDay))
+      let numDaysBrushToEnd = Math.round(Math.abs((this.scales.xBrush.domain()[1] - this.extent[1]) / this.oneDay))
+
+      this.numChunks = 0
+
+      if (numDaysBeginningToBrush > numDaysBrush || numDaysBrushToEnd > numDaysBrush) { // chunks before or after the brush
+        this.getOtherChunks(numDaysBrush)
+
+        this.maxOfMaxCumul = d3.max(this.maxCumulAll)
+        this.minOfMinCumul = d3.min(this.minCumulAll)
+        this.numChunks = this.chunkDaysForRect.length
+      } else {
+        this.maxOfMaxCumul = d3.max(this.maxCumulAll)
+        this.minOfMinCumul = d3.min(this.minCumulAll)
+        this.dataChunks = []
+        this.chunkDaysForRect = []
+      }
+    },
+    getOtherChunks (numDaysBrush) {
+      console.log('getOtherChunks:start', numDaysBrush)
+      this.chunkDaysForRect = []
+      let chunkBefore = false
+      let chunkAfter = false
+      let numDaysBeforeBrush = Math.round(Math.abs(this.extent[0] - this.scales.xBrush.domain()[0]) / this.oneDay)
+      let numDaysAfterBrush = Math.round(Math.abs(this.scales.xBrush.domain()[1] - this.extent[1]) / this.oneDay)
+
+      if (numDaysBrush < numDaysBeforeBrush) { chunkBefore = true }
+      if (numDaysBrush < numDaysAfterBrush) { chunkAfter = true }
+
+      let numYearsPerBrush = (Math.floor(numDaysBrush / 365) < 1) ? 1 : Math.floor(numDaysBrush / 365)
+      let brushStartDay = this.extent[0]
+
+      let chunkCounterBefore = 1
+      let chunkCounterAfter = 1
+      this.dataChunks = []
+      this.chunkMeans = []
+
+      let data = this.filledData.slice() // probably don't need
+
+      if (chunkBefore) {
+        let chunkStartDayOffset = -365 * numYearsPerBrush * 1
+        let chunkStartDay = d3.timeDay.offset(brushStartDay, chunkStartDayOffset)
+        let chunkEndDay = d3.timeDay.offset(chunkStartDay, numDaysBrush)
+
+        while (chunkStartDay > this.scales.xBrush.domain()[0]) {
+          this.chunkDaysForRect.push({
+            start: this.scales.xBrush(chunkStartDay),
+            width: this.scales.xBrush(chunkEndDay) - this.scales.xBrush(chunkStartDay),
+            beforeNotAfter: true
+          })
+
+          let cumulFilteredDate = this.getCumulFilteredDate(data, chunkStartDay, chunkEndDay, chunkCounterBefore)
+          cumulFilteredDate.forEach(function (d, i) {
+            d.date2 = d3.timeDay.offset(d.date, -chunkStartDayOffset)
+            d.beforeNotAfter = true
+          })
+
+          if (cumulFilteredDate.length > 0) {
+            this.dataChunks.push(cumulFilteredDate)
+            this.chunkMeans.push({
+              minYear: d3.min(cumulFilteredDate.map(d => d.date)),
+              valueMean: d3.mean(cumulFilteredDate.map(d => d.value))
+            })
+          }
+
+          this.updateCumulAll(cumulFilteredDate)
+
+          chunkCounterBefore++
+
+          chunkStartDayOffset = -365 * numYearsPerBrush * chunkCounterBefore
+          chunkStartDay = d3.timeDay.offset(brushStartDay, chunkStartDayOffset)
+          chunkEndDay = d3.timeDay.offset(chunkStartDay, numDaysBrush)
+        }
+      }
+
+      if (chunkAfter) {
+        let chunkStartDayOffset = 365 * numYearsPerBrush * 1
+        let chunkStartDay = d3.timeDay.offset(brushStartDay, chunkStartDayOffset)
+        let chunkEndDay = d3.timeDay.offset(chunkStartDay, numDaysBrush)
+
+        while (chunkEndDay < this.scales.xBrush.domain()[1]) {
+          this.chunkDaysForRect.push({
+            start: this.scales.xBrush(chunkStartDay),
+            width: this.scales.xBrush(chunkEndDay) - this.scales.xBrush(chunkStartDay),
+            beforeNotAfter: false
+          })
+
+          let cumulFilteredDate = this.getCumulFilteredDate(data, chunkStartDay, chunkEndDay, chunkCounterAfter)
+          cumulFilteredDate.forEach(function (d, i) {
+            d.date2 = d3.timeDay.offset(d.date, -chunkStartDayOffset)
+            d.beforeNotAfter = false
+          })
+
+          if (cumulFilteredDate.length > 0) {
+            this.dataChunks.push(cumulFilteredDate)
+            this.chunkMeans.push({
+              minYear: d3.min(cumulFilteredDate.map(d => d.date)),
+              valueMean: d3.mean(cumulFilteredDate.map(d => d.value))
+            })
+          }
+
+          this.updateCumulAll(cumulFilteredDate)
+
+          chunkCounterAfter++
+
+          chunkStartDayOffset = 365 * numYearsPerBrush * chunkCounterAfter
+          chunkStartDay = d3.timeDay.offset(brushStartDay, chunkStartDayOffset)
+          chunkEndDay = d3.timeDay.offset(chunkStartDay, numDaysBrush)
+        }
+      }
+      this.chunkCounters = [ chunkCounterBefore - 1, chunkCounterAfter - 1 ]
+    },
+    render () {
+      this.updateYCFD()
+      this.renderLineChunks()
+      // this.updateFilterRect()
+      // this.updateChunkRects()
+      this.updateAxes() // (dat, from)
+      this.updateLines()
+    },
+    updateYCFD () {
+      this.scales.yCFD.domain([this.minOfMinCumul, this.maxOfMaxCumul]).nice()
+    },
+    renderLineChunks () {
+      console.log('renderLineChunks:start')
+
+      let lines = d3.select('.lineChunks').selectAll('path')
+        .data(this.dataChunks)
+
+      lines.enter()
+        .append('path')
+
+      lines
+        .attr('fill', 'none')
+        .attr('stroke', this.colorChunkLines)
+        .attr('stroke-width', 2.5)
+        .attr('stroke-linejoin', 'round')
+        .attr('stroke-linecap', 'round')
+        .attr('d', this.lineChunks)
+        // .on('mousemove', this.moved)
+        // .on('mouseenter', this.entered)
+        // .on('mouseleave', this.left)
+
+      lines.exit().remove()
+    },
+    colorChunkLines (d, i) {
+      if (d[0].beforeNotAfter) {
+        let r = d3.range(0, this.chunkCounters[0]) // reverse the order because before chunks are counted from right to left
+        return d3.interpolateViridis(r[this.chunkCounters[0] - i - 1] / this.numChunks)
+      } else {
+        return d3.interpolateViridis(i / this.numChunks)
+      }
+    },
+    updateAxes () {
+      // if(from == 'brushed') {
+      this.svgElements.focus.select('.axis--x').call(this.axes.x)
+      this.svgElements.focus.select('.axis--yCFD').selectAll('.tick:last-of-type text').text('')
+      this.svgElements.focus.select('.axis--yCFD').call(this.scales.yCFD)
+//      this.svgElements.focus.select('.zoom').call(zoom.transform, d3.zoomIdentity
+//        .scale(this.width / (this.extent[1] - this.extent[0]))
+//        .translate(-this.extent[0], 0))
+
+      // means.select('.axis--xMeans').call(xAxisMeans);
+      // means.select('.axis--yMeans').selectAll('.tick:last-of-type text').text('')
+      // means.select('.axis--yMeans').call(yAxisMeans);
+    /*    }
+    else if (from == 'zoomed') {
+      focus.select('.axis--x').call(xAxis)
+      focus.select('.axis--yCFD').selectAll('.tick:last-of-type text').text('')
+      focus.select('.axis--yCFD').call(yAxisCFD)
+      context.select('.brush').call(brush.move, x.range().map(dat.invertX, dat))
+
+      //means.select('.axis--xMeans').call(xAxisMeans);
+      //means.select('.axis--yMeans').selectAll('.tick:last-of-type text').text('')
+      //means.select('.axis--yMeans').call(yAxisMeans);
+    */
+    },
+    updateLines () {
+      this.svgElements.focus.select('.line')
+        .attr('d', this.line(this.scales))
+
+      this.svgElements.focus.select('.lineCFD')
+        .datum(this.brushedData)
+        .attr('d', this.lineCFD(this.scales))
+        // .on('mouseenter', enteredLineCFD)
+        // .on('mouseleave', leftLineCFD)
     }
   }
 }

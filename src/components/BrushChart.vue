@@ -14,6 +14,11 @@ export default {
       type: Array,
       required: false,
       defaults: () => []
+    },
+    extent: {
+      type: Array,
+      required: false,
+      defaults: () => []
     }
   },
 
@@ -53,6 +58,7 @@ export default {
     brush () {
       return d3.brushX()
         .extent([[0, 0], [this.width, this.height]])
+        // .on('brush end', this.brushed)
         .on('brush end', this.brushed)
     }
   },
@@ -91,7 +97,7 @@ export default {
       this.svgElements.context.append('g')
         .attr('class', 'axis axis--x2')
         .attr('transform', 'translate(0,' + this.height + ')')
-        .call(this.axes.x);      
+        .call(this.axes.x)
 
       this.svgElements.context.append('g')
         .attr('class', 'brush')
@@ -106,29 +112,11 @@ export default {
         .x(d => scales.x(d.date))
         .y(d => scales.y(d.value))
     },
-    brushTemp () {
-      return d3.brushX()
-        .extent([[0, 0], [this.width, this.height]])
-        .on('brush end', this.brushed)
-    },
     brushed () {
-    //  console.log('in brushed', d3.event.sourceEvent)
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return
-      let from = 'brushed'
-
-      // get new date range
-      let eventType = d3.event.sourceEvent
       let s = d3.event.selection || this.scales.x.range()
-      let sDates = s.map(this.scales.x.invert, this.scales.x)
-      this.scales.x.domain(sDates)
-console.log("in brushed", sDates)
-
-      // dataAll.dataCFD = getCumulFilteredDate(dataAll.dataCombined, x.domain()[0], x.domain()[1]); 
-      // emptyCumulAll()
-      // updateCumulAll(dataAll.dataCFD)
-      // updateFilterChunk(sDates)
-      // updateChunks(sDates, s)
-      // render(s, from, eventType)
+      let brushExtent = s.map(this.scales.x.invert, this.scales.x)
+      this.$emit('brushed', brushExtent)
     }
   }
 }
