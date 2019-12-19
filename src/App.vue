@@ -1,47 +1,43 @@
 <template>
   <v-app>
-      <v-container fluid>
-        <v-row align="center">
-          <v-col class="d-flex" cols="6" sm="3">
-            <v-select
-              :items="dataFileNames"
-              v-model="selectedFileName"
-              label="Data files"
-              solo
-            ></v-select>
-  <!--    <timeseries-chart :extent="brushExtent" :data="filledData" v-if="filledData"></timeseries-chart>
-      <brush-chart :extent="brushExtent" @brushed="onBrush"></brush-chart>
-      <chunk-chart></chunk-chart> -->
-          </v-col>
-        </v-row>
-        <v-content>
-          <v-container fluid>
-            <v-layout row>
-              <v-flex grow-shrink-0>
-                <v-card>
-                  <timeseries-chart
-                    :filledData="filledData"
-                    v-if="filledData"
-                    :extent="brushExtent">
-                  </timeseries-chart>
-                </v-card>
-              </v-flex>
-            </v-layout>
-            <v-layout row>
-              <v-flex grow-shrink-0>
-                <v-card>
-                  <brush-chart
-                    :filledData="filledData"
-                    v-if="filledData"
-                    :extent="brushExtent"
-                    @brushed="onBrush">
-                  </brush-chart>
-                </v-card>
-              </v-flex>
-            </v-layout>
-        </v-container>
-      </v-content>
-    </v-container>
+    <v-app-bar app clipped-left dark>
+      <v-toolbar-title class="headline">
+        <span>SHEDS</span>
+        <span class="font-weight-light px-2">|</span>
+        <span class="font-weight-light">Time series explorer</span>
+        <!-- <span class="font-weight-light px-2">|</span> -->
+        <span class="text-uppercase overline ml-3">Alpha Version</span>
+      </v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-btn text small href="https://ecosheds.org">
+        <v-icon small left>mdi-home</v-icon> SHEDS
+      </v-btn>
+    </v-app-bar>
+    <v-content>
+      <v-row align="center" justify="start" class="ml-2">
+        <v-col class="d-flex" cols="3">
+          <v-select
+            :items="dataFileNames"
+            v-model="selectedFileName"
+            label="Data files"
+            solo>
+          </v-select>
+        </v-col>
+      </v-row>
+      <v-container>
+        <timeseries-chart
+        :filledData="filledData"
+        v-if="filledData"
+        :extent="brushExtent">
+      </timeseries-chart>
+      <brush-chart
+        :filledData="filledData"
+        v-if="filledData"
+        :extent="brushExtent"
+        @brushed="onBrush">
+      </brush-chart>
+      </v-container>
+    </v-content>
   </v-app>
 </template>
 
@@ -66,7 +62,7 @@ export default {
     rawData: [],
     brushExtent: null,
     movingMeanWindow: 10,
-    dataFileNames: ['1949884.csv', 'mitchellFromSHEDS.csv'],
+    dataFileNames: ['1949884.csv', '1949884_partial.csv', 'mitchellFromSHEDS.csv'],
     selectedFileName: null
   }),
   computed: {
@@ -174,7 +170,7 @@ export default {
     getData () {
       // for now
       let parseDate = null
-      if (this.selectedFileName === '1949884.csv') {
+      if (this.selectedFileName.includes('1949')) {
         parseDate = d3.timeParse('%-m/%-d/%Y')
       } else if (this.selectedFileName === 'mitchellFromSHEDS.csv') {
         parseDate = d3.timeParse('%-m/%-d/%Y %H:%M')

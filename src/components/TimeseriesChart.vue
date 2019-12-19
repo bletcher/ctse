@@ -179,22 +179,19 @@ export default {
         .attr('stroke-linejoin', 'round')
         .attr('stroke-linecap', 'round')
         .attr('d', this.lineCFD(this.scales))
-        .on('mouseenter', function () {
-          d3.select(this)
-            .attr('stroke-width', 5)
-            .attr('stroke-opacity', 1)
-            // .'()
-        })
-        .on('mouseleave', function () {
-          d3.select(this)
-            .attr('stroke-width', 2.5)
-            .attr('stroke-opacity', 1)
-        })
 
       this.svgElements.focus.append('g')
         .attr('class', 'axis axis--yCFD')
         .attr('transform', `translate(${this.width},0)`)
         .call(this.axes.yCFD)
+
+      this.svgElements.focus.append('g')
+        .attr('class', 'lineChunks')
+        .attr('fill', 'none')
+        .attr('stroke-width', 1.0)
+        .attr('stroke-linejoin', 'round')
+        .attr('stroke-linecap', 'round')
+        .attr('stroke-opacity', 0.6)
 
       console.log('initializeTimeSeriesChart:end')
     },
@@ -228,10 +225,10 @@ export default {
         .y(d => scales.yCFD(d.cumulValue))
     },
     enteredLineCFD (d, i, n) {
-      d3.select(n)
+      d3.select(this)
         .attr('stroke-width', 5)
         .attr('stroke-opacity', 1)
-        .moveToFront()
+        // .moveToFront()
 
       // d3.select('.filterRect').selectAll('rect')
       //   .attr('height', 5)
@@ -240,7 +237,7 @@ export default {
     leftLineCFD () {
       d3.select(this)
         .attr('stroke-width', 2.5)
-        .attr('stroke-opacity', 1)
+        .attr('stroke-opacity', 0.6)
 
       // d3.select('.filterRect').selectAll('rect')
       //   .attr('height', 2.5)
@@ -257,7 +254,7 @@ export default {
         .y(d => scales.yCFD(d.cumulValue))
     },
     moved (d) {
-      let xPos = this.scales.x.invert(d3.event.layerX - this.margin.left)
+      let xPos = this.scales.x.invert(d3.event.offsetX - this.margin.left)
       // let yPos = this.scales.yCFD.invert(d3.event.layerY)
       let i0 = d3.bisectLeft(d.map(dd => dd.date2), xPos, 1) - 1
 
@@ -274,16 +271,16 @@ export default {
       this.scales.y.domain(d3.extent(this.brushedData, d => d.value)).nice()
 
       this.emptyCumulAll()
-      this.updateCumulAll(this.brushedData)
+      this.updateCumulAll()
       this.updateFilterChunk() // change name of this to updateDaysForRect
       this.updateChunks()
       this.render()
 
       console.log('updateTimeseriesChart:end')
     },
-    updateCumulAll (dat) {
-      this.maxCumulAll.push(this.getMaxCumul(dat))
-      this.minCumulAll.push(this.getMinCumul(dat))
+    updateCumulAll () {
+      this.maxCumulAll.push(this.getMaxCumul(this.brushedData))
+      this.minCumulAll.push(this.getMinCumul(this.brushedData))
     },
     emptyCumulAll () {
       this.maxCumulAll = []
@@ -431,8 +428,7 @@ export default {
     },
     renderLineChunks () {
       console.log('renderLineChunks:start')
-
-      let lines = d3.select('.lineChunks').selectAll('path')
+      let lines = this.svgElements.focus.select('.lineChunks').selectAll('path')
         .data(this.dataChunks)
 
       lines.enter()
@@ -444,12 +440,28 @@ export default {
         .attr('stroke-width', 2.5)
         .attr('stroke-linejoin', 'round')
         .attr('stroke-linecap', 'round')
-        .attr('d', this.lineChunks)
-        // .on('mousemove', this.moved)
-        // .on('mouseenter', this.entered)
-        // .on('mouseleave', this.left)
+        .attr('d', this.lineChunks(this.scales))
+        .on('mousemove', this.moved)
+        .on('mouseenter', this.mouseEnter)
+        .on('mouseleave', this.mouseLeave)
 
       lines.exit().remove()
+      console.log('renderLineChunks:end')
+    },
+    mouseEnter (d, i, n) {
+      console.log(d,i,n)
+      d3.select(n[i])
+        .attr('stroke-width', 5)
+        .attr('stroke-opacity', 0.6)
+
+      this.chartElements.dot.attr('display', null)
+    },
+    mouseLeave (d, i, n) {
+      d3.select(n[i])
+        .attr('stroke-width', 2.5)
+        .attr('stroke-opacity', 0.6)
+
+      this.chartElements.dot.attr('display', 'none')
     },
     colorChunkLines (d, i) {
       if (d[0].beforeNotAfter) {
@@ -485,21 +497,26 @@ export default {
     },
     updateLines () {
       this.svgElements.focus.select('.line')
+        .datum(this.brushedData)
         .attr('d', this.line(this.scales))
 
       this.svgElements.focus.select('.lineCFD')
         .datum(this.brushedData)
         .attr('d', this.lineCFD(this.scales))
-        // .on('mouseenter', enteredLineCFD)
-        // .on('mouseleave', leftLineCFD)
+        .on('mouseenter', this.mouseEnter)
+        .on('mouseleave', this.mouseLeave)
+    },
+    'd3.selection.prototype.moveToFront': function () {
+      return this.each(function () {
+        this.parentNode.appendChild(this)
+      })
     }
   }
 }
-
 </script>
 
 <style scoped>
-  .timeseries-chart {
+/*  .timeseries-chart {
     width: 100%;
     height: 100%;
     position: absolute;
@@ -507,4 +524,5 @@ export default {
     left: 0;
     z-index: 0;
     }
+*/
 </style>
