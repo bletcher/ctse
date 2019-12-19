@@ -28,14 +28,20 @@
         <timeseries-chart
         :filledData="filledData"
         v-if="filledData"
-        :extent="brushExtent">
-      </timeseries-chart>
-      <brush-chart
-        :filledData="filledData"
-        v-if="filledData"
         :extent="brushExtent"
-        @brushed="onBrush">
-      </brush-chart>
+        >
+        </timeseries-chart>
+        <brush-chart
+          :filledData="filledData"
+          v-if="filledData"
+          :extent="brushExtent"
+          @brushed="onBrush">
+        </brush-chart>
+        <rect-chart
+          :filledData="filledData"
+          v-if="filledData"
+          :extent="brushExtent">
+        </rect-chart>
       </v-container>
     </v-content>
   </v-app>
@@ -45,6 +51,7 @@
 import * as d3 from 'd3'
 import TimeseriesChart from '@/components/TimeseriesChart'
 import BrushChart from '@/components/BrushChart'
+import RectChart from '@/components/RectChart'
 
 const formatters = {
   mdy: d3.timeFormat('%B %d, %Y'),
@@ -56,7 +63,8 @@ export default {
 
   components: {
     TimeseriesChart,
-    BrushChart
+    BrushChart,
+    RectChart
   },
   data: () => ({
     rawData: [],
@@ -108,11 +116,6 @@ export default {
       }
       console.log('filledData:end', filled)
       return Object.freeze(filled)
-    },
-    chunkData () {
-      // filledData + brushExtent -> chunked data
-      // could be module later
-      return null
     },
     dataByDay () {
       console.log('dataByDay:start')
@@ -166,7 +169,6 @@ export default {
     onBrush (extent) {
       this.brushExtent = extent
     },
-
     getData () {
       // for now
       let parseDate = null

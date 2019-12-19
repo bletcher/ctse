@@ -3,9 +3,14 @@ import App from './App.vue'
 import vuetify from './plugins/vuetify'
 
 Vue.config.productionTip = false
-// Vue.config.errorHandler = err => {
-//   console.log('Exception: ', err)
-// }
+
+export const eventBus = new Vue({
+  methods: {
+    emitChunks (d) {
+      this.$emit('updatedChunks', d)
+    }
+  }
+})
 
 new Vue({
   vuetify,

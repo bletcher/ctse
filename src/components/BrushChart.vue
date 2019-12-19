@@ -6,6 +6,7 @@
 
 <script>
 import * as d3 from 'd3'
+// import { eventBus } from '../main'
 
 export default {
   name: 'BrushChart',

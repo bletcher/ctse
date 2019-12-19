@@ -6,6 +6,7 @@
 
 <script>
 import * as d3 from 'd3'
+import { eventBus } from '../main'
 
 export default {
   name: 'TimeseriesChart',
@@ -61,7 +62,7 @@ export default {
     numChunks: null,
     chunkCounters: null,
     chunkDaysForRect: [],
-    dataChunks: [],
+    chunksData: [],
     chunkMeans: []
   }),
   mounted () {
@@ -225,27 +226,22 @@ export default {
         .y(d => scales.yCFD(d.cumulValue))
     },
     enteredLineCFD (d, i, n) {
-      d3.select(this)
+      d3.select(n[i])
         .attr('stroke-width', 5)
         .attr('stroke-opacity', 1)
         // .moveToFront()
 
-      // d3.select('.filterRect').selectAll('rect')
-      //   .attr('height', 5)
-      //   .'()
+      d3.select('.filterRect').selectAll('rect')
+        .attr('height', 5)
+        // .moveToFront()
     },
-    leftLineCFD () {
-      d3.select(this)
+    leftLineCFD (d, i, n) {
+      d3.select(n[i])
         .attr('stroke-width', 2.5)
         .attr('stroke-opacity', 0.6)
 
-      // d3.select('.filterRect').selectAll('rect')
-      //   .attr('height', 2.5)
-
-    // ' () {
-    //   return this.each(function () {
-    //    this.parentNode.appendChild(this)
-    //  })
+      d3.select('.filterRect').selectAll('rect')
+        .attr('height', 2.5)
     },
     lineChunks (scales) {
       return d3.line()
@@ -317,7 +313,7 @@ export default {
       } else {
         this.maxOfMaxCumul = d3.max(this.maxCumulAll)
         this.minOfMinCumul = d3.min(this.minCumulAll)
-        this.dataChunks = []
+        this.chunksData = []
         this.chunkDaysForRect = []
       }
     },
@@ -337,7 +333,7 @@ export default {
 
       let chunkCounterBefore = 1
       let chunkCounterAfter = 1
-      this.dataChunks = []
+      this.chunksData = []
       this.chunkMeans = []
 
       let data = this.filledData.slice() // probably don't need
@@ -361,7 +357,7 @@ export default {
           })
 
           if (cumulFilteredDate.length > 0) {
-            this.dataChunks.push(cumulFilteredDate)
+            this.chunksData.push(cumulFilteredDate)
             this.chunkMeans.push({
               minYear: d3.min(cumulFilteredDate.map(d => d.date)),
               valueMean: d3.mean(cumulFilteredDate.map(d => d.value))
@@ -397,7 +393,7 @@ export default {
           })
 
           if (cumulFilteredDate.length > 0) {
-            this.dataChunks.push(cumulFilteredDate)
+            this.chunksData.push(cumulFilteredDate)
             this.chunkMeans.push({
               minYear: d3.min(cumulFilteredDate.map(d => d.date)),
               valueMean: d3.mean(cumulFilteredDate.map(d => d.value))
@@ -418,6 +414,12 @@ export default {
     render () {
       this.updateYCFD()
       this.renderLineChunks()
+      eventBus.emitChunks({
+        chunksData: this.chunksData,
+        chunkDaysForRect: this.chunkDaysForRect,
+        filterDaysForRect: this.filterDaysForRect,
+        chunkCounters: this.chunkCounters,
+        numChunks: this.numChunks })
       // this.updateFilterRect()
       // this.updateChunkRects()
       this.updateAxes() // (dat, from)
@@ -429,7 +431,7 @@ export default {
     renderLineChunks () {
       console.log('renderLineChunks:start')
       let lines = this.svgElements.focus.select('.lineChunks').selectAll('path')
-        .data(this.dataChunks)
+        .data(this.chunksData)
 
       lines.enter()
         .append('path')
@@ -442,26 +444,39 @@ export default {
         .attr('stroke-linecap', 'round')
         .attr('d', this.lineChunks(this.scales))
         .on('mousemove', this.moved)
-        .on('mouseenter', this.mouseEnter)
-        .on('mouseleave', this.mouseLeave)
+        .on('mouseenter', this.enteredChunkLine)
+        .on('mouseleave', this.leftChunkLine)
 
       lines.exit().remove()
       console.log('renderLineChunks:end')
     },
-    mouseEnter (d, i, n) {
-      console.log(d,i,n)
+    enteredChunkLine (d, i, n) {
       d3.select(n[i])
         .attr('stroke-width', 5)
         .attr('stroke-opacity', 0.6)
 
       this.chartElements.dot.attr('display', null)
+      let rectFiltered = this.getRectFromPath(n[i])
+      d3.select(rectFiltered)
+        .attr('height', 5)
     },
-    mouseLeave (d, i, n) {
+    leftChunkLine (d, i, n) {
       d3.select(n[i])
         .attr('stroke-width', 2.5)
         .attr('stroke-opacity', 0.6)
 
       this.chartElements.dot.attr('display', 'none')
+
+      let rectFiltered = this.getRectFromPath(n[i])
+      d3.select(rectFiltered)
+        .attr('height', 2.5)
+        // .moveToFront()
+    },
+    getRectFromPath (path) {
+      let rects = d3.select('.chunkRects').selectAll('rect').nodes()
+      let pathStroke = d3.select(path).attr('stroke')
+      let rectsF = rects.filter(function (d) { return d3.select(d).attr('fill') === pathStroke })
+      return rectsF[0]
     },
     colorChunkLines (d, i) {
       if (d[0].beforeNotAfter) {
@@ -476,9 +491,9 @@ export default {
       this.svgElements.focus.select('.axis--x').call(this.axes.x)
       this.svgElements.focus.select('.axis--yCFD').selectAll('.tick:last-of-type text').text('')
       this.svgElements.focus.select('.axis--yCFD').call(this.scales.yCFD)
-//      this.svgElements.focus.select('.zoom').call(zoom.transform, d3.zoomIdentity
-//        .scale(this.width / (this.extent[1] - this.extent[0]))
-//        .translate(-this.extent[0], 0))
+      //      this.svgElements.focus.select('.zoom').call(zoom.transform, d3.zoomIdentity
+      //        .scale(this.width / (this.extent[1] - this.extent[0]))
+      //        .translate(-this.extent[0], 0))
 
       // means.select('.axis--xMeans').call(xAxisMeans);
       // means.select('.axis--yMeans').selectAll('.tick:last-of-type text').text('')
@@ -503,8 +518,8 @@ export default {
       this.svgElements.focus.select('.lineCFD')
         .datum(this.brushedData)
         .attr('d', this.lineCFD(this.scales))
-        .on('mouseenter', this.mouseEnter)
-        .on('mouseleave', this.mouseLeave)
+        .on('mouseenter', this.enteredLineCFD)
+        .on('mouseleave', this.leftLineCFD)
     },
     'd3.selection.prototype.moveToFront': function () {
       return this.each(function () {
