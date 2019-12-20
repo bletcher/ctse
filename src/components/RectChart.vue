@@ -32,9 +32,9 @@ export default {
     widthMax: 960,
     heightMax: 40,
     margin: {
-      top: 10,
+      top: 0,
       right: 50,
-      bottom: 10,
+      bottom: 0,
       left: 40
     }
   }),
@@ -80,27 +80,27 @@ export default {
 
       rects
         .attr('fill', 'red')
-        .attr('y', 22)
+        .attr('y', this.heightMax / 2)
         .attr('x', function (d) { return d.start })
         .attr('height', 2)
         .attr('width', function (d) { return d.width })
-        // .on('mouseenter', enteredFilterRect)
-        // .on('mouseleave', leftFilterRect)
+        .on('mouseenter', this.enteredFilterRect)
+        .on('mouseleave', this.leftFilterRect)
 
       rects.exit().remove()
     },
-    enteredFilterRect (d, i) {
-      d3.select(d)
+    enteredFilterRect (d, i, n) {
+      d3.select(n[i])
         .attr('height', 5)
-        .moveToFront()
+        // .moveToFront()
 
       d3.select('.lineCFD')
         .attr('stroke-width', 5)
         .attr('stroke-opacity', 1)
         // .moveToFront()
     },
-    leftFilterRect (d, i) {
-      d3.select(d)
+    leftFilterRect (d, i, n) {
+      d3.select(n[i])
         .attr('height', 2.5)
 
       d3.select('.lineCFD')
@@ -134,9 +134,9 @@ export default {
     },
     positionRectLines (d, i) {
       if (i % 2 === 0) {
-        return 24
+        return this.heightMax / 2 - 1
       } else {
-        return 26
+        return this.heightMax / 2 + 1
       }
     },
     enteredRect (d, i, n) {

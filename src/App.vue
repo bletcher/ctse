@@ -42,6 +42,14 @@
           v-if="filledData"
           :extent="brushExtent">
         </rect-chart>
+        <means-chart
+          v-if="filledData">
+        </means-chart>
+        <allpoints-chart
+          :dataByDay="dataByDay"
+          :dataByDayOfYear="dataByDayOfYear"
+          v-if="filledData">
+        </allpoints-chart>
       </v-container>
     </v-content>
   </v-app>
@@ -52,6 +60,8 @@ import * as d3 from 'd3'
 import TimeseriesChart from '@/components/TimeseriesChart'
 import BrushChart from '@/components/BrushChart'
 import RectChart from '@/components/RectChart'
+import AllpointsChart from '@/components/AllpointsChart'
+import MeansChart from '@/components/MeansChart'
 
 const formatters = {
   mdy: d3.timeFormat('%B %d, %Y'),
@@ -64,7 +74,9 @@ export default {
   components: {
     TimeseriesChart,
     BrushChart,
-    RectChart
+    RectChart,
+    AllpointsChart,
+    MeansChart
   },
   data: () => ({
     rawData: [],
@@ -73,6 +85,17 @@ export default {
     dataFileNames: ['1949884.csv', '1949884_partial.csv', 'mitchellFromSHEDS.csv'],
     selectedFileName: null
   }),
+  mounted () {
+  },
+  watch: {
+    filledData () {
+      console.log('watch:filledData')
+      // this.initializeCharts()
+    },
+    selectedFileName () {
+      this.getData()
+    }
+  },
   computed: {
     filledData () {
       console.log('filledData:start')
@@ -118,7 +141,6 @@ export default {
       return Object.freeze(filled)
     },
     dataByDay () {
-      console.log('dataByDay:start')
       let meanByDay = d3.nest()
         .key(d => d.day)
         .sortKeys((a, b) => d3.ascending(+a, +b))
@@ -152,17 +174,6 @@ export default {
       }
       console.log('dataByDayYear: end', meanByDayOfYear)
       return meanByDayOfYear
-    }
-  },
-  mounted () {
-  },
-  watch: {
-    filledData () {
-      console.log('watch:filledData')
-      // this.initializeCharts()
-    },
-    selectedFileName () {
-      this.getData()
     }
   },
   methods: {

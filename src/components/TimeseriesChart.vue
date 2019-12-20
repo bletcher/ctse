@@ -121,12 +121,12 @@ export default {
           .text('Cumulative Temperature (C)'))
         // .call(cons)
 
-      this.svg.append('defs').append('clipPath')
+ /*     this.svg.append('defs').append('clipPath')
         .attr('id', 'clip')
         .append('rect')
         .attr('width', this.width)
         .attr('height', this.height)
-
+*/
       this.svgElements.focus = this.svg.append('g')
         .attr('class', 'focus')
         .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
@@ -419,17 +419,15 @@ export default {
         chunkDaysForRect: this.chunkDaysForRect,
         filterDaysForRect: this.filterDaysForRect,
         chunkCounters: this.chunkCounters,
-        numChunks: this.numChunks })
-      // this.updateFilterRect()
-      // this.updateChunkRects()
-      this.updateAxes() // (dat, from)
+        numChunks: this.numChunks,
+        chunkMeans: this.chunkMeans })
+      this.updateAxes()
       this.updateLines()
     },
     updateYCFD () {
       this.scales.yCFD.domain([this.minOfMinCumul, this.maxOfMaxCumul]).nice()
     },
     renderLineChunks () {
-      console.log('renderLineChunks:start')
       let lines = this.svgElements.focus.select('.lineChunks').selectAll('path')
         .data(this.chunksData)
 
@@ -448,7 +446,6 @@ export default {
         .on('mouseleave', this.leftChunkLine)
 
       lines.exit().remove()
-      console.log('renderLineChunks:end')
     },
     enteredChunkLine (d, i, n) {
       d3.select(n[i])
