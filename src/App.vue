@@ -24,22 +24,69 @@
           </v-select>
         </v-col>
       </v-row>
+      <v-row align="center" justify="start" class="ml-2">
+        <v-col cols="3" sm="2" md="4">
+          <v-menu
+            v-model="startDateMenu"
+            :close-on-content-click="false"
+            :nudge-right="40"
+            transition="scale-transition"
+            offset-y
+            min-width="290px"
+          >
+            <template v-slot:activator="{ on }">
+              <v-text-field
+                v-model="startDate"
+                label="Start date"
+                v-on="on"
+              ></v-text-field>
+            </template>
+            <v-date-picker
+              v-model="startDate"
+              @input="startDateMenu = false; updateBrushExtentFromStartDate()"
+            ></v-date-picker>
+          </v-menu>
+        </v-col>
+        <v-col cols="3" sm="6" md="4">
+          <v-menu
+            v-model="endDateMenu"
+            :close-on-content-click="false"
+            :nudge-right="40"
+            transition="scale-transition"
+            offset-y
+            min-width="290px"
+          >
+            <template v-slot:activator="{ on }">
+              <v-text-field
+                v-model="endDate"
+                label="End date"
+                v-on="on"
+              ></v-text-field>
+            </template>
+            <v-date-picker
+              v-model="endDate"
+              @input="endDateMenu = false; updateBrushExtentFromEndDate()"
+            ></v-date-picker>
+          </v-menu>
+        </v-col>
+      </v-row>
+
       <v-container>
         <timeseries-chart
-        :filledData="filledData"
         v-if="filledData"
+        :filledData="filledData"
         :extent="brushExtent"
         >
         </timeseries-chart>
         <brush-chart
-          :filledData="filledData"
           v-if="filledData"
+          :filledData="filledData"
           :extent="brushExtent"
           @brushed="onBrush">
         </brush-chart>
         <rect-chart
-          :filledData="filledData"
           v-if="filledData"
+          :filledData="filledData"
           :extent="brushExtent">
         </rect-chart>
         <means-chart
@@ -65,7 +112,9 @@ import MeansChart from '@/components/MeansChart'
 
 const formatters = {
   mdy: d3.timeFormat('%B %d, %Y'),
-  julian: d3.timeFormat('%j')
+  julian: d3.timeFormat('%j'),
+  parseDatePicked: d3.timeParse('%Y-%m-%d'),
+  ymd: d3.timeFormat('%Y-%m-%d')
 }
 
 export default {
@@ -83,7 +132,11 @@ export default {
     brushExtent: null,
     movingMeanWindow: 10,
     dataFileNames: ['1949884.csv', '1949884_partial.csv', 'mitchellFromSHEDS.csv'],
-    selectedFileName: null
+    selectedFileName: null,
+    startDate: new Date().toISOString().substr(0, 10),
+    endDate: new Date().toISOString().substr(0, 10),
+    startDateMenu: false,
+    endDateMenu: false
   }),
   mounted () {
   },
@@ -179,6 +232,14 @@ export default {
   methods: {
     onBrush (extent) {
       this.brushExtent = extent
+      this.startDate = formatters.ymd(extent[0])
+      this.endDate = formatters.ymd(extent[1])
+    },
+    updateBrushExtentFromStartDate () {
+      this.brushExtent = [formatters.parseDatePicked(this.startDate), this.brushExtent[1]]
+    },
+    updateBrushExtentFromEndDate () {
+      this.brushExtent = [this.brushExtent[0], formatters.parseDatePicked(this.endDate)]
     },
     getData () {
       // for now

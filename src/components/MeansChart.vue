@@ -31,7 +31,7 @@ export default {
       x: null
     }
   }),
-/*  watch: {
+  /*  watch: {
     'chunkMeans' () {
       this.initializeMeansChart()
     }
@@ -44,7 +44,7 @@ export default {
       if (d.numChunks > 0) {
         this.createMeansChart()
         // this.updateMeans()
-      }  
+      }
     })
   },
   computed: {

@@ -121,12 +121,13 @@ export default {
           .text('Cumulative Temperature (C)'))
         // .call(cons)
 
- /*     this.svg.append('defs').append('clipPath')
+      /*
+      this.svg.append('defs').append('clipPath')
         .attr('id', 'clip')
         .append('rect')
         .attr('width', this.width)
         .attr('height', this.height)
-*/
+        */
       this.svgElements.focus = this.svg.append('g')
         .attr('class', 'focus')
         .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
@@ -267,16 +268,17 @@ export default {
       this.scales.y.domain(d3.extent(this.brushedData, d => d.value)).nice()
 
       this.emptyCumulAll()
-      this.updateCumulAll()
+      this.updateCumulAll(this.brushedData)
+      // this.updateYCFD()
       this.updateFilterChunk() // change name of this to updateDaysForRect
       this.updateChunks()
       this.render()
 
       console.log('updateTimeseriesChart:end')
     },
-    updateCumulAll () {
-      this.maxCumulAll.push(this.getMaxCumul(this.brushedData))
-      this.minCumulAll.push(this.getMinCumul(this.brushedData))
+    updateCumulAll (d) {
+      this.maxCumulAll.push(this.getMaxCumul(d))
+      this.minCumulAll.push(this.getMinCumul(d))
     },
     emptyCumulAll () {
       this.maxCumulAll = []
@@ -420,7 +422,8 @@ export default {
         filterDaysForRect: this.filterDaysForRect,
         chunkCounters: this.chunkCounters,
         numChunks: this.numChunks,
-        chunkMeans: this.chunkMeans })
+        chunkMeans: this.chunkMeans
+      })
       this.updateAxes()
       this.updateLines()
     },

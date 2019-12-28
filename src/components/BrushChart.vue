@@ -51,6 +51,10 @@ export default {
   watch: {
     'filledData' () {
       this.initializeBrushChart()
+    },
+    'extent' () {
+      console.log('in extent watch')
+      this.updateBrushChart()
     }
   },
   computed: {
@@ -59,7 +63,6 @@ export default {
     brush () {
       return d3.brushX()
         .extent([[0, 0], [this.width, this.height]])
-        // .on('brush end', this.brushed)
         .on('brush end', this.brushed)
     }
   },
@@ -107,6 +110,11 @@ export default {
 
       console.log('initializeBrushChart:end')
     },
+    updateBrushChart () {
+      console.log('in updateBrushChart', this.extent, this.extent.map(this.scales.x, this.scales.x.invert))
+      this.svgElements.context.select('.brush')
+        .call(this.brush.move, this.extent.map(this.scales.x, this.scales.x.invert))
+    },
     line (scales) {
       return d3.line()
         .defined(d => !isNaN(d.value))
@@ -114,7 +122,9 @@ export default {
         .y(d => scales.y(d.value))
     },
     brushed () {
+      console.log('in brushed', d3.event.sourceEvent)
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return
+      if (!d3.event.sourceEvent) return // don't emit new brushExtent if brush updated with datePicker
       let s = d3.event.selection || this.scales.x.range()
       let brushExtent = s.map(this.scales.x.invert, this.scales.x)
       this.$emit('brushed', brushExtent)
