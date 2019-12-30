@@ -52,7 +52,6 @@ export default {
       dot: null
     },
     brushedData: [],
-    dataFilledCFD: [],
     minCumulAll: [],
     minOfMinCumul: null,
     maxCumulAll: [],
@@ -96,11 +95,16 @@ export default {
       this.scales.yCFD = d3.scaleLinear().range([this.height, 0])
       this.scales.xBrush = d3.scaleTime().range([0, this.width])
 
-      this.scales.x.domain(d3.extent(this.filledData, d => d.date))
-      this.scales.y.domain(d3.extent(this.filledData, d => d.value)).nice()
-      this.scales.xCFD.domain(d3.extent(this.filledData, d => d.date))
-      this.scales.yCFD.domain(d3.extent(this.filledData, d => d.value)).nice()
-      this.scales.xBrush.domain(d3.extent(this.filledData, d => d.date))
+      const filledDataExtentDate = d3.extent(this.filledData, d => d.date)
+      const filledDataExtentValue = d3.extent(this.filledData, d => d.value)
+
+      this.scales.x.domain(filledDataExtentDate)
+      this.scales.y.domain(filledDataExtentValue).nice()
+      this.scales.xCFD.domain(filledDataExtentDate)
+      this.scales.xBrush.domain(filledDataExtentDate)
+
+      let dataFilledCFD = this.getCumulFilteredDate(this.filledData, filledDataExtentDate[0], filledDataExtentDate[1])
+      this.scales.yCFD.domain(d3.extent(dataFilledCFD, d => d.cumulValue)).nice()
 
       this.axes.x = d3.axisBottom(this.scales.x).ticks(this.width / 80).tickSizeOuter(0)
 
@@ -152,7 +156,6 @@ export default {
         .attr('text-anchor', 'middle')
         .attr('y', -10)
 
-      // from append to focus
       this.svgElements.focus.append('path')
         .datum(this.filledData)
         .attr('class', 'line')
@@ -490,7 +493,8 @@ export default {
       // if(from == 'brushed') {
       this.svgElements.focus.select('.axis--x').call(this.axes.x)
       this.svgElements.focus.select('.axis--yCFD').selectAll('.tick:last-of-type text').text('')
-      this.svgElements.focus.select('.axis--yCFD').call(this.scales.yCFD)
+      this.svgElements.focus.select('.axis--yCFD').call(this.axes.yCFD)
+
       //      this.svgElements.focus.select('.zoom').call(zoom.transform, d3.zoomIdentity
       //        .scale(this.width / (this.extent[1] - this.extent[0]))
       //        .translate(-this.extent[0], 0))

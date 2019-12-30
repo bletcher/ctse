@@ -133,20 +133,21 @@ export default {
     movingMeanWindow: 10,
     dataFileNames: ['1949884.csv', '1949884_partial.csv', 'mitchellFromSHEDS.csv'],
     selectedFileName: null,
-    startDate: new Date().toISOString().substr(0, 10),
-    endDate: new Date().toISOString().substr(0, 10),
+    startDate: null,
+    endDate: null,
     startDateMenu: false,
     endDateMenu: false
   }),
   mounted () {
   },
   watch: {
-    filledData () {
-      console.log('watch:filledData')
-      // this.initializeCharts()
-    },
     selectedFileName () {
       this.getData()
+    },
+    filledData () {
+      this.brushExtent = d3.extent(this.filledData, d => d.date)
+      this.startDate = formatters.ymd(this.brushExtent[0])
+      this.endDate = formatters.ymd(this.brushExtent[1])
     }
   },
   computed: {
@@ -236,9 +237,19 @@ export default {
       this.endDate = formatters.ymd(extent[1])
     },
     updateBrushExtentFromStartDate () {
+      if (formatters.parseDatePicked(this.startDate) > this.brushExtent[1]) {
+        alert('Start date must be before end date')
+        this.startDate = formatters.ymd(this.extent[0])
+        return
+      }
       this.brushExtent = [formatters.parseDatePicked(this.startDate), this.brushExtent[1]]
     },
     updateBrushExtentFromEndDate () {
+      if (this.brushExtent[0] > formatters.parseDatePicked(this.endDate)) {
+        alert('End date must be after start date')
+        this.startDate = formatters.ymd(this.extent[1])
+        return
+      }
       this.brushExtent = [this.brushExtent[0], formatters.parseDatePicked(this.endDate)]
     },
     getData () {
