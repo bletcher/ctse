@@ -4,7 +4,7 @@
       <v-toolbar-title class="headline">
         <span>SHEDS</span>
         <span class="font-weight-light px-2">|</span>
-        <span class="font-weight-light">Time series explorer</span>
+        <span class="font-weight-light">Time Series Explorer</span>
         <!-- <span class="font-weight-light px-2">|</span> -->
         <span class="text-uppercase overline ml-3">Alpha Version</span>
       </v-toolbar-title>
@@ -72,12 +72,37 @@
       </v-row>
 
       <v-container>
-        <timeseries-chart
-        v-if="filledData"
-        :filledData="filledData"
-        :extent="brushExtent"
+        <v-tabs
+          v-model="tab"
         >
-        </timeseries-chart>
+          <v-tab href="#means">Means</v-tab>
+          <v-tab href="#timeseries">Time series</v-tab>
+          <v-tab href="#doy">By day of year</v-tab>
+        </v-tabs>
+
+        <v-tabs-items v-model="tab">
+          <v-tab-item :key="1" value="means">
+            <means-chart
+              v-if="filledData">
+            </means-chart>
+          </v-tab-item>
+          <v-tab-item :key="2" value="timeseries">
+            <timeseries-chart
+              v-if="filledData"
+              :filledData="filledData"
+              :extent="brushExtent"
+            >
+            </timeseries-chart>
+          </v-tab-item>
+          <v-tab-item :key="3" value="doy">
+            <allpoints-chart
+              :dataByDay="dataByDay"
+              :dataByDayOfYear="dataByDayOfYear"
+              v-if="filledData">
+            </allpoints-chart>
+          </v-tab-item>
+        </v-tabs-items>
+
         <brush-chart
           v-if="filledData"
           :filledData="filledData"
@@ -89,14 +114,6 @@
           :filledData="filledData"
           :extent="brushExtent">
         </rect-chart>
-        <means-chart
-          v-if="filledData">
-        </means-chart>
-        <allpoints-chart
-          :dataByDay="dataByDay"
-          :dataByDayOfYear="dataByDayOfYear"
-          v-if="filledData">
-        </allpoints-chart>
       </v-container>
     </v-content>
   </v-app>
@@ -136,7 +153,8 @@ export default {
     startDate: null,
     endDate: null,
     startDateMenu: false,
-    endDateMenu: false
+    endDateMenu: false,
+    tab: 'means'
   }),
   mounted () {
   },

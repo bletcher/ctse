@@ -197,8 +197,6 @@ export default {
         .attr('stroke-linejoin', 'round')
         .attr('stroke-linecap', 'round')
         .attr('stroke-opacity', 0.6)
-
-      console.log('initializeTimeSeriesChart:end')
     },
     getCumulFilteredDate (dataIn, minDate, maxDate, chunkCounter) {
       let data = dataIn.slice() // make a copy

@@ -107,11 +107,8 @@ export default {
         .attr('class', 'brush')
         .call(this.brush)
         .call(this.brush.move, this.scales.x.range())
-
-      console.log('initializeBrushChart:end')
     },
     updateBrushChart () {
-      console.log('in updateBrushChart', this.extent, this.extent.map(this.scales.x, this.scales.x.invert))
       this.svgElements.context.select('.brush')
         .call(this.brush.move, this.extent.map(this.scales.x, this.scales.x.invert))
     },
@@ -122,7 +119,6 @@ export default {
         .y(d => scales.y(d.value))
     },
     brushed () {
-      console.log('in brushed', d3.event.sourceEvent)
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return
       if (!d3.event.sourceEvent) return // don't emit new brushExtent if brush updated with datePicker
       let s = d3.event.selection || this.scales.x.range()
