@@ -38,8 +38,12 @@ export default {
       left: 40
     }
   }),
+  mounted () {
+    this.initializeRectChart()
+  },
   watch: {
     'filledData' () {
+      console.log('RectChart:watch.filledData')
       this.initializeRectChart()
     }
   },

@@ -62,16 +62,20 @@ export default {
     chunkCounters: null,
     chunkDaysForRect: [],
     chunksData: [],
-    chunkMeans: []
+    chunkMeans: [],
+    filterMean: null
   }),
   mounted () {
-    // this.initializeTimeSeriesChart()
+    this.initializeTimeSeriesChart()
+    this.updateTimeseriesChart()
   },
   watch: {
     'filledData' () {
+      console.log('TimeSeriesChart:watch:filledData')
       this.initializeTimeSeriesChart()
     },
     'extent' () {
+      console.log('TimeSeriesChart:watch:extent')
       this.updateTimeseriesChart()
     }
   },
@@ -81,7 +85,7 @@ export default {
   },
   methods: {
     initializeTimeSeriesChart () {
-      console.log('initializeTimeseriesChart:start', this.filledData)
+      console.log('initializeTimeseriesChart:start')
 
       d3.select('.timeseries-chart').selectAll('svg > *').remove()
       this.svg = d3.select('.timeseries-chart').select('svg')
@@ -274,8 +278,6 @@ export default {
       this.updateFilterChunk() // change name of this to updateDaysForRect
       this.updateChunks()
       this.render()
-
-      console.log('updateTimeseriesChart:end')
     },
     updateCumulAll (d) {
       this.maxCumulAll.push(this.getMaxCumul(d))
@@ -299,8 +301,6 @@ export default {
       })
     },
     updateChunks () {
-      console.log('updateChunks:start')
-      // let numDaysX2 = Math.round(Math.abs((x2.domain()[1] - x2.domain()[0]) / this.oneDay))
       let numDaysBrush = Math.round(Math.abs((this.extent[1] - this.extent[0]) / this.oneDay))
       let numDaysBeginningToBrush = Math.round(Math.abs((this.extent[0] - this.scales.xBrush.domain()[0]) / this.oneDay))
       let numDaysBrushToEnd = Math.round(Math.abs((this.scales.xBrush.domain()[1] - this.extent[1]) / this.oneDay))
@@ -321,7 +321,6 @@ export default {
       }
     },
     getOtherChunks (numDaysBrush) {
-      console.log('getOtherChunks:start', numDaysBrush)
       this.chunkDaysForRect = []
       let chunkBefore = false
       let chunkAfter = false
@@ -423,7 +422,8 @@ export default {
         filterDaysForRect: this.filterDaysForRect,
         chunkCounters: this.chunkCounters,
         numChunks: this.numChunks,
-        chunkMeans: this.chunkMeans
+        chunkMeans: this.chunkMeans,
+        filterMean: { minYear: this.extent[0], valueMean: d3.mean(this.brushedData.map(d => d.value)) }
       })
       this.updateAxes()
       this.updateLines()

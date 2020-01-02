@@ -46,14 +46,16 @@ export default {
     }
   }),
   mounted () {
-    // this.initializeBrushChart()
+    this.initializeBrushChart()
+    this.updateBrushChart()
   },
   watch: {
     'filledData' () {
+      console.log('BrushChart:watch.filledData')
       this.initializeBrushChart()
     },
     'extent' () {
-      console.log('in extent watch')
+      console.log('BrushChart:watch.extent')
       this.updateBrushChart()
     }
   },

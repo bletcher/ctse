@@ -1,6 +1,11 @@
 <template>
   <div class='means-chart'>
     <svg></svg>
+    <v-overlay
+      :absolute="true"
+      :value="overlayValue"
+    >
+    </v-overlay>
   </div>
 </template>
 
@@ -15,11 +20,12 @@ export default {
   },
   data: () => ({
     chunkMeans: [],
+    filterMean: null,
     numChunks: null,
     svgMeans: null,
     means: null,
     widthMax: 960,
-    heightMax: 600,
+    heightMax: 400,
     margin: {
       top: 20,
       right: 50,
@@ -29,21 +35,28 @@ export default {
     axes: {
       y: null,
       x: null
-    }
+    },
+    overlayValue: true
   }),
   /*  watch: {
     'chunkMeans' () {
       this.initializeMeansChart()
     }
   }, */
+  mounted () {
+  },
   created () {
     eventBus.$on('updatedChunks', (d) => {
       this.chunkMeans = d.chunkMeans
       this.numChunks = d.numChunks
+      this.filterMean = d.filterMean
 
-      if (d.numChunks > 0) {
+      if (d.numChunks > 1) {
+        this.overlayValue = false
         this.createMeansChart()
-        // this.updateMeans()
+      } else {
+        d3.select('.means-chart').selectAll('svg > *').remove()
+        this.overlayValue = true
       }
     })
   },
@@ -53,6 +66,8 @@ export default {
   },
   methods: {
     createMeansChart () {
+      this.chunkMeans.push(this.filterMean)
+
       d3.select('.means-chart').selectAll('svg > *').remove()
       this.svgMeans = d3.select('.means-chart').select('svg')
       this.svgMeans

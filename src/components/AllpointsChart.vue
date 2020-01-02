@@ -32,8 +32,12 @@ export default {
       left: 40
     }
   }),
+  mounted () {
+    this.initializeAllPointsChart()
+  },
   watch: {
     'dataByDayOfYear' () {
+      console.log('AllpointsChart:watch.dataByDayOfYear')
       this.initializeAllPointsChart()
     }
   },
@@ -43,7 +47,6 @@ export default {
   },
   methods: {
     initializeAllPointsChart () {
-      console.log('initializeAllPointsChart: start')
       const parseDate = d3.timeParse('%B %d, %Y')
       const julian = d3.timeFormat('%j')
 

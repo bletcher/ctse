@@ -24,54 +24,10 @@
           </v-select>
         </v-col>
       </v-row>
-      <v-row align="center" justify="start" class="ml-2">
-        <v-col cols="3" sm="2" md="4">
-          <v-menu
-            v-model="startDateMenu"
-            :close-on-content-click="false"
-            :nudge-right="40"
-            transition="scale-transition"
-            offset-y
-            min-width="290px"
-          >
-            <template v-slot:activator="{ on }">
-              <v-text-field
-                v-model="startDate"
-                label="Start date"
-                v-on="on"
-              ></v-text-field>
-            </template>
-            <v-date-picker
-              v-model="startDate"
-              @input="startDateMenu = false; updateBrushExtentFromStartDate()"
-            ></v-date-picker>
-          </v-menu>
-        </v-col>
-        <v-col cols="3" sm="6" md="4">
-          <v-menu
-            v-model="endDateMenu"
-            :close-on-content-click="false"
-            :nudge-right="40"
-            transition="scale-transition"
-            offset-y
-            min-width="290px"
-          >
-            <template v-slot:activator="{ on }">
-              <v-text-field
-                v-model="endDate"
-                label="End date"
-                v-on="on"
-              ></v-text-field>
-            </template>
-            <v-date-picker
-              v-model="endDate"
-              @input="endDateMenu = false; updateBrushExtentFromEndDate()"
-            ></v-date-picker>
-          </v-menu>
-        </v-col>
-      </v-row>
-
-      <v-container>
+      <v-container
+        fluid
+        v-if="filledData"
+      >
         <v-tabs
           v-model="tab"
         >
@@ -82,13 +38,10 @@
 
         <v-tabs-items v-model="tab">
           <v-tab-item :key="1" value="means">
-            <means-chart
-              v-if="filledData">
-            </means-chart>
+            <means-chart></means-chart>
           </v-tab-item>
           <v-tab-item :key="2" value="timeseries">
             <timeseries-chart
-              v-if="filledData"
               :filledData="filledData"
               :extent="brushExtent"
             >
@@ -98,22 +51,66 @@
             <allpoints-chart
               :dataByDay="dataByDay"
               :dataByDayOfYear="dataByDayOfYear"
-              v-if="filledData">
+            >
             </allpoints-chart>
           </v-tab-item>
         </v-tabs-items>
 
         <brush-chart
-          v-if="filledData"
           :filledData="filledData"
           :extent="brushExtent"
           @brushed="onBrush">
         </brush-chart>
         <rect-chart
-          v-if="filledData"
           :filledData="filledData"
           :extent="brushExtent">
         </rect-chart>
+
+        <v-row align="center" justify="space-between" class="ml-2">
+          <v-col cols="2" sm="2" md="2">
+            <v-menu
+              v-model="startDateMenu"
+              :close-on-content-click="false"
+              :nudge-right="180"
+              transition="scale-transition"
+              min-width="290px"
+            >
+              <template v-slot:activator="{ on }">
+                <v-text-field
+                  v-model="startDate"
+                  label="Start date"
+                  v-on="on"
+                ></v-text-field>
+              </template>
+              <v-date-picker
+                v-model="startDate"
+                @input="startDateMenu = false; updateBrushExtentFromStartDate()"
+              ></v-date-picker>
+            </v-menu>
+          </v-col>
+          <v-spacer></v-spacer>
+          <v-col cols="2" sm="2" md="2">
+            <v-menu
+              v-model="endDateMenu"
+              :close-on-content-click="false"
+              :nudge-left="295"
+              transition="scale-transition"
+              min-width="290px"
+            >
+              <template v-slot:activator="{ on }">
+                <v-text-field
+                  v-model="endDate"
+                  label="End date"
+                  v-on="on"
+                ></v-text-field>
+              </template>
+              <v-date-picker
+                v-model="endDate"
+                @input="endDateMenu = false; updateBrushExtentFromEndDate()"
+              ></v-date-picker>
+            </v-menu>
+          </v-col>
+        </v-row>
       </v-container>
     </v-content>
   </v-app>
@@ -154,7 +151,8 @@ export default {
     endDate: null,
     startDateMenu: false,
     endDateMenu: false,
-    tab: 'means'
+    tab: 'doy',
+    overlayValue: false
   }),
   mounted () {
   },
@@ -163,6 +161,7 @@ export default {
       this.getData()
     },
     filledData () {
+      console.log('App:watch:filledData')
       this.brushExtent = d3.extent(this.filledData, d => d.date)
       this.startDate = formatters.ymd(this.brushExtent[0])
       this.endDate = formatters.ymd(this.brushExtent[1])
@@ -170,6 +169,7 @@ export default {
   },
   computed: {
     filledData () {
+      if (this.rawData.length === 0) return
       console.log('filledData:start')
 
       let filled = []
@@ -184,10 +184,8 @@ export default {
       // Loop over all dates and fill missing dates
       for (let i = 0; i < rawDataFullRange.length; i++) {
         let dateIncludedTF = dataByDayDates.includes(formatters.mdy(rawDataFullRange[i]))
-        // if (i % 1000 === 0) console.log('second', i, dateIncludedTF, this.rawData.length, startIndex)
 
         if (!dateIncludedTF) { // missing data
-          // console.log('in !')
           let dataFromDataByDayOfYear = this.dataByDayOfYear.find(d => +d.key === +formatters.julian(rawDataFullRange[i])) // not so slow because only searching through 365 lines
           filled.push({
             date: rawDataFullRange[i],
@@ -209,10 +207,10 @@ export default {
           }
         }
       }
-      console.log('filledData:end', filled)
       return Object.freeze(filled)
     },
     dataByDay () {
+      console.log('dataByDay:start')
       let meanByDay = d3.nest()
         .key(d => d.day)
         .sortKeys((a, b) => d3.ascending(+a, +b))
@@ -244,7 +242,6 @@ export default {
           meanByDayOfYear[i].movingMean = movingMean[i]
         }
       }
-      console.log('dataByDayYear: end', meanByDayOfYear)
       return meanByDayOfYear
     }
   },
@@ -271,6 +268,7 @@ export default {
       this.brushExtent = [this.brushExtent[0], formatters.parseDatePicked(this.endDate)]
     },
     getData () {
+      console.log('getData:start')
       // for now
       let parseDate = null
       if (this.selectedFileName.includes('1949')) {
@@ -287,7 +285,6 @@ export default {
         return d
       })
         .then(dat => {
-          console.log('dat', dat)
           this.rawData = Object.freeze(dat)
         })
         .catch(error => console.error(error))
