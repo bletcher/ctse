@@ -5,6 +5,7 @@
       :absolute="true"
       :value="overlayValue"
     >
+    <p>Means chart not shown for less than 3 chunks</p>
     </v-overlay>
   </div>
 </template>

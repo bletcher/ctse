@@ -232,14 +232,14 @@ export default {
         .y(d => scales.yCFD(d.cumulValue))
     },
     enteredLineCFD (d, i, n) {
+      n[i].parentNode.appendChild(n[i]) // move to front
+
       d3.select(n[i])
         .attr('stroke-width', 5)
         .attr('stroke-opacity', 1)
-        // .moveToFront()
 
       d3.select('.filterRect').selectAll('rect')
         .attr('height', 5)
-        // .moveToFront()
     },
     leftLineCFD (d, i, n) {
       d3.select(n[i])
@@ -263,8 +263,9 @@ export default {
       let parseDateY = d3.timeFormat('%Y')
       let minYear = parseDateY(d3.min(d.map(dd => dd.date)))
 
-      this.chartElements.dot.attr('transform', `translate(${this.scales.x(d[i0].date2)},${this.scales.yCFD(d[i0].cumulValue)})`) // .moveToFront()
-      this.chartElements.dot.select('text').text(minYear) // .moveToFront()
+      this.chartElements.dot.attr('transform', `translate(${this.scales.x(d[i0].date2)},${this.scales.yCFD(d[i0].cumulValue)})`)
+      // doesn't work...this.chartElements.dot.parentNode.appendChild(this.chartElements.dot) // move to front
+      this.chartElements.dot.select('text').text(minYear)
     },
     updateTimeseriesChart () {
       console.log('updateTimeseriesChart:start')
@@ -452,9 +453,10 @@ export default {
       lines.exit().remove()
     },
     enteredChunkLine (d, i, n) {
+      n[i].parentNode.appendChild(n[i]) // move to front
       d3.select(n[i])
         .attr('stroke-width', 5)
-        .attr('stroke-opacity', 0.6)
+        .attr('stroke-opacity', 1)
 
       this.chartElements.dot.attr('display', null)
       let rectFiltered = this.getRectFromPath(n[i])
@@ -471,7 +473,6 @@ export default {
       let rectFiltered = this.getRectFromPath(n[i])
       d3.select(rectFiltered)
         .attr('height', 2.5)
-        // .moveToFront()
     },
     getRectFromPath (path) {
       let rects = d3.select('.chunkRects').selectAll('rect').nodes()
@@ -492,25 +493,6 @@ export default {
       this.svgElements.focus.select('.axis--x').call(this.axes.x)
       this.svgElements.focus.select('.axis--yCFD').selectAll('.tick:last-of-type text').text('')
       this.svgElements.focus.select('.axis--yCFD').call(this.axes.yCFD)
-
-      //      this.svgElements.focus.select('.zoom').call(zoom.transform, d3.zoomIdentity
-      //        .scale(this.width / (this.extent[1] - this.extent[0]))
-      //        .translate(-this.extent[0], 0))
-
-      // means.select('.axis--xMeans').call(xAxisMeans);
-      // means.select('.axis--yMeans').selectAll('.tick:last-of-type text').text('')
-      // means.select('.axis--yMeans').call(yAxisMeans);
-    /*    }
-    else if (from == 'zoomed') {
-      focus.select('.axis--x').call(xAxis)
-      focus.select('.axis--yCFD').selectAll('.tick:last-of-type text').text('')
-      focus.select('.axis--yCFD').call(yAxisCFD)
-      context.select('.brush').call(brush.move, x.range().map(dat.invertX, dat))
-
-      //means.select('.axis--xMeans').call(xAxisMeans);
-      //means.select('.axis--yMeans').selectAll('.tick:last-of-type text').text('')
-      //means.select('.axis--yMeans').call(yAxisMeans);
-    */
     },
     updateLines () {
       this.svgElements.focus.select('.line')

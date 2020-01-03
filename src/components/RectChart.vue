@@ -94,14 +94,14 @@ export default {
       rects.exit().remove()
     },
     enteredFilterRect (d, i, n) {
+      n[i].parentNode.appendChild(n[i]) // move to front
+
       d3.select(n[i])
         .attr('height', 5)
-        // .moveToFront()
 
       d3.select('.lineCFD')
         .attr('stroke-width', 5)
         .attr('stroke-opacity', 1)
-        // .moveToFront()
     },
     leftFilterRect (d, i, n) {
       d3.select(n[i])
@@ -144,16 +144,18 @@ export default {
       }
     },
     enteredRect (d, i, n) {
+      n[i].parentNode.appendChild(n[i]) // move to front
+
       d3.select(n[i])
         .attr('height', 5)
-        // .moveToFront()
 
       let pathFiltered = this.getPathFromRect(n[i])
 
       d3.select(pathFiltered)
         .attr('stroke-width', 5)
         .attr('stroke-opacity', 1)
-        // .moveToFront()
+
+      pathFiltered.parentNode.appendChild(pathFiltered) // move to front
     },
     leftRect (d, i, n) {
       d3.select(n[i])
@@ -174,5 +176,4 @@ export default {
 
   }
 }
-
 </script>
