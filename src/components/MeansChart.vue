@@ -17,8 +17,14 @@ import { eventBus } from '../main'
 export default {
   name: 'MeansChart',
   props: {
+    extent: {
+      type: Array,
+      required: false,
+      defaults: () => []
+    }
   },
   data: () => ({
+    chunkMeansIn: [],
     chunkMeans: [],
     filterMean: null,
     numChunks: null,
@@ -36,39 +42,47 @@ export default {
       y: null,
       x: null
     },
+    scales: {
+      x: null,
+      y: null
+    },
     overlayValue: true
   }),
-  /*  watch: {
-    'chunkMeans' () {
-      this.initializeMeansChart()
-    }
-  }, */
-  mounted () {
-  },
   created () {
     eventBus.$on('updatedChunks', (d) => {
-      this.chunkMeans = d.chunkMeans
+      console.log('MeansChart:created:eventbus')
+      this.chunkMeansIn = d.chunkMeans
       this.numChunks = d.numChunks
       this.filterMean = d.filterMean
+    })
+  },
+  watch: {
+    'extent' () {
+      console.log('MeansChart:watch:extent')
 
-      if (d.numChunks > 1) {
+      if (this.numChunks > 1) {
         this.overlayValue = false
-        this.createMeansChart()
+        this.initializeMeansChart()
+        this.updateMeansChart()
       } else {
         d3.select('.means-chart').selectAll('svg > *').remove()
         this.overlayValue = true
       }
-    })
+    }
   },
   computed: {
     height () { return this.heightMax - this.margin.top - this.margin.bottom },
     width () { return this.widthMax - this.margin.left - this.margin.right }
   },
   methods: {
-    createMeansChart () {
-      this.chunkMeans.push(this.filterMean)
+    initializeMeansChart () {
+      console.log('initializeMeansChart:start')
+
+      this.scales.x = d3.scaleTime().range([0, this.width])
+      this.scales.y = d3.scaleLinear().range([this.height, 0])
 
       d3.select('.means-chart').selectAll('svg > *').remove()
+
       this.svgMeans = d3.select('.means-chart').select('svg')
       this.svgMeans
         .attr('width', this.widthMax)
@@ -78,20 +92,40 @@ export default {
         .attr('class', 'chunkmeans')
         .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
 
-      const x = d3.scaleTime()
-        .range([0, this.width])
-        .domain(d3.extent(this.chunkMeans, d => d.minYear))
-      const y = d3.scaleLinear()
-        .range([this.height, 0])
-        .domain(d3.extent(this.chunkMeans, d => d.valueMean))
+      this.axes.x = d3.axisBottom(this.scales.x)
+
+      this.axes.y = g => g
+        .call(d3.axisLeft(this.scales.y))
+        .call(g => g.select('.tick:last-of-type text').clone()
+          .attr('x', 6)
+          .attr('text-anchor', 'start')
+          // .attr('font-weight', 'bold')
+          .text('Mean Temperature (C)'))
+
+      this.means.append('g')
+        .attr('class', 'axis axis--xMeans')
+        .attr('transform', `translate(0, ${this.height})`)
+        .call(this.axes.x)
+
+      this.means.append('g')
+        .attr('class', 'axis axis--yMeans')
+        .call(this.axes.y)
+    },
+    updateMeansChart () {
+      console.log('updateMeansChart:start', this.numChunks)
+      this.chunkMeans = this.chunkMeansIn.slice()
+      this.chunkMeans.push(this.filterMean)
+
+      this.scales.x.domain(d3.extent(this.chunkMeans, d => d.minYear))
+      this.scales.y.domain(d3.extent(this.chunkMeans, d => d.valueMean))
 
       let circles = this.means.selectAll('circle')
         .data(this.chunkMeans)
 
       circles.enter()
         .append('circle')
-        .attr('cx', d => x(d.minYear))
-        .attr('cy', d => y(d.valueMean))
+        .attr('cx', d => this.scales.x(d.minYear))
+        .attr('cy', d => this.scales.y(d.valueMean))
         .attr('r', 3)
         .attr('stroke', 'steelblue')
         .attr('fill', 'steelblue')
@@ -109,10 +143,10 @@ export default {
 
       this.means.append('line')
         .datum(lr)
-        .attr('x1', d => x((d[0][0])))
-        .attr('x2', d => x(d[1][0]))
-        .attr('y1', d => y(d[0][1]))
-        .attr('y2', d => y(d[1][1]))
+        .attr('x1', d => this.scales.x((d[0][0])))
+        .attr('x2', d => this.scales.x(d[1][0]))
+        .attr('y1', d => this.scales.y(d[0][1]))
+        .attr('y2', d => this.scales.y(d[1][1]))
         .attr('stroke', 'steelblue')
       // //////////////////////////////////////
       this.means.selectAll('.rSq').remove()
@@ -127,24 +161,6 @@ export default {
       this.means.exit().remove()
 
       this.means.select('.axis--yMeans').selectAll('.tick:last-of-type text').text('')
-      this.axes.x = d3.axisBottom(x)
-
-      this.axes.y = g => g
-        .call(d3.axisLeft(y))
-        .call(g => g.select('.tick:last-of-type text').clone()
-          .attr('x', 6)
-          .attr('text-anchor', 'start')
-          // .attr('font-weight', 'bold')
-          .text('Mean Temperature (C)'))
-
-      this.means.append('g')
-        .attr('class', 'axis axis--xMeans')
-        .attr('transform', `translate(0, ${this.height})`)
-        .call(this.axes.x)
-
-      this.means.append('g')
-        .attr('class', 'axis axis--yMeans')
-        .call(this.axes.y)
     },
     dateParseY () {
       return d3.timeFormat('%j')

@@ -38,7 +38,10 @@
 
         <v-tabs-items v-model="tab">
           <v-tab-item :key="1" value="means">
-            <means-chart></means-chart>
+            <means-chart
+              :extent="brushExtent"
+            >
+            </means-chart>
           </v-tab-item>
           <v-tab-item :key="2" value="timeseries">
             <timeseries-chart
@@ -145,7 +148,7 @@ export default {
     rawData: [],
     brushExtent: null,
     movingMeanWindow: 10,
-    dataFileNames: ['1949884.csv', '1949884_partial.csv', 'mitchellFromSHEDS.csv'],
+    dataFileNames: ['1949884.csv', '1949884_partial.csv', 'mitchellFromSHEDS.csv'], // , 'co2_mm_mlo.csv'],
     selectedFileName: null,
     startDate: null,
     endDate: null,
@@ -271,7 +274,7 @@ export default {
       console.log('getData:start')
       // for now
       let parseDate = null
-      if (this.selectedFileName.includes('1949')) {
+      if (this.selectedFileName.includes('1949') || this.selectedFileName === 'co2_mm_mlo.csv') {
         parseDate = d3.timeParse('%-m/%-d/%Y')
       } else if (this.selectedFileName === 'mitchellFromSHEDS.csv') {
         parseDate = d3.timeParse('%-m/%-d/%Y %H:%M')
