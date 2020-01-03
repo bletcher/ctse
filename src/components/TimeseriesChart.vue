@@ -140,23 +140,15 @@ export default {
         .attr('class', 'focus')
         .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
 
-      /*
-      this.svgElements.focus.append('rect')
-        .attr('class', 'zoom')
-        .attr('width', this.width)
-        .attr('height', this.height)
-        // .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-        // .call(zoom)
-      */
       this.chartElements.dot = this.svgElements.focus.append('g')
         .attr('class', 'dot')
         .attr('display', 'none')
 
       this.chartElements.dot.append('circle')
-        .attr('r', 2.5)
+        .attr('r', 5)
 
       this.chartElements.dot.append('text')
-        .style('font', '12px sans-serif')
+        .style('font', '16px sans-serif')
         .attr('text-anchor', 'middle')
         .attr('y', -10)
 
@@ -257,7 +249,6 @@ export default {
     },
     moved (d) {
       let xPos = this.scales.x.invert(d3.event.offsetX - this.margin.left)
-      // let yPos = this.scales.yCFD.invert(d3.event.layerY)
       let i0 = d3.bisectLeft(d.map(dd => dd.date2), xPos, 1) - 1
 
       let parseDateY = d3.timeFormat('%Y')
@@ -454,11 +445,13 @@ export default {
     },
     enteredChunkLine (d, i, n) {
       n[i].parentNode.appendChild(n[i]) // move to front
+
       d3.select(n[i])
         .attr('stroke-width', 5)
         .attr('stroke-opacity', 1)
 
       this.chartElements.dot.attr('display', null)
+
       let rectFiltered = this.getRectFromPath(n[i])
       d3.select(rectFiltered)
         .attr('height', 5)

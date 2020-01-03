@@ -24,7 +24,7 @@ export default {
   data: () => ({
     svg: null,
     widthMax: 960,
-    heightMax: 500,
+    heightMax: 400,
     margin: {
       top: 20,
       right: 50,
@@ -56,8 +56,8 @@ export default {
 
       d3.select('.allpoints-chart').selectAll('svg > *').remove()
       let svgAllPoints = d3.select('.allpoints-chart').select('svg')
-        .attr('width', this.width)
-        .attr('height', this.height)
+        .attr('width', this.widthMax)
+        .attr('height', this.heightMax)
 
       svgAllPoints.append('g')
         .attr('class', 'allpoints')
@@ -65,10 +65,29 @@ export default {
 
       let y = d3.scaleLinear()
         .range([this.height, 0])
-        .domain(d3.extent(this.dataByDay, d => d.value))
+        .domain(d3.extent(this.dataByDay, d => d.value)).nice()
       let x = d3.scaleLinear()
         .range([0, this.width])
-        .domain(d3.extent(this.dataByDay, d => d.dayOfYear)).nice()
+        .domain(d3.extent(this.dataByDay, d => d.dayOfYear))
+
+      let axisX = d3.axisBottom(x)
+
+      let axisY = g => g
+        .call(d3.axisLeft(y))
+        .attr('transform', `translate(${this.margin.left}, ${this.margin.bottom})`)
+        .call(g => g.select('.tick:last-of-type text').clone()
+          .attr('x', 6)
+          .attr('text-anchor', 'start')
+          .text('Temperature (C)'))
+
+      svgAllPoints.append('g')
+        .attr('class', 'axis axis--xAll')
+        .attr('transform', `translate(${this.margin.left}, ${this.height + this.margin.bottom})`)
+        .call(axisX)
+
+      svgAllPoints.append('g')
+        .attr('class', 'axis axis--yAll')
+        .call(axisY)
 
       let circles = d3.select('.allpoints').selectAll('circle')
         .data(this.dataByDay)
