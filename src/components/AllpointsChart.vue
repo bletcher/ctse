@@ -37,7 +37,7 @@ export default {
   },
   watch: {
     'dataByDayOfYear' () {
-      console.log('AllpointsChart:watch.dataByDayOfYear')
+      // console.log('AllpointsChart:watch.dataByDayOfYear')
       this.initializeAllPointsChart()
     }
   },

@@ -37,20 +37,20 @@
         </v-tabs>
 
         <v-tabs-items v-model="tab">
-          <v-tab-item :key="1" value="means">
+          <v-tab-item :key="1" value="means" transition="fade-transition">
             <means-chart
               :extent="brushExtent"
             >
             </means-chart>
           </v-tab-item>
-          <v-tab-item :key="2" value="timeseries">
+          <v-tab-item :key="2" value="timeseries" transition="fade-transition">
             <timeseries-chart
               :filledData="filledData"
               :extent="brushExtent"
             >
             </timeseries-chart>
           </v-tab-item>
-          <v-tab-item :key="3" value="doy">
+          <v-tab-item :key="3" value="doy" transition="fade-transition">
             <allpoints-chart
               :dataByDay="dataByDay"
               :dataByDayOfYear="dataByDayOfYear"

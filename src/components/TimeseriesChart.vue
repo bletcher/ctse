@@ -71,11 +71,11 @@ export default {
   },
   watch: {
     'filledData' () {
-      console.log('TimeSeriesChart:watch:filledData')
+      // console.log('TimeSeriesChart:watch:filledData')
       this.initializeTimeSeriesChart()
     },
     'extent' () {
-      console.log('TimeSeriesChart:watch:extent')
+      // console.log('TimeSeriesChart:watch:extent')
       this.updateTimeseriesChart()
     }
   },
@@ -482,8 +482,9 @@ export default {
       }
     },
     updateAxes () {
-      // if(from == 'brushed') {
       this.svgElements.focus.select('.axis--x').call(this.axes.x)
+      this.svgElements.focus.select('.axis--y').selectAll('.tick:last-of-type text').text('')
+      this.svgElements.focus.select('.axis--y').call(this.axes.y)
       this.svgElements.focus.select('.axis--yCFD').selectAll('.tick:last-of-type text').text('')
       this.svgElements.focus.select('.axis--yCFD').call(this.axes.yCFD)
     },

@@ -51,11 +51,11 @@ export default {
   },
   watch: {
     'filledData' () {
-      console.log('BrushChart:watch.filledData')
+      // console.log('BrushChart:watch.filledData')
       this.initializeBrushChart()
     },
     'extent' () {
-      console.log('BrushChart:watch.extent')
+      // console.log('BrushChart:watch.extent')
       this.updateBrushChart()
     }
   },

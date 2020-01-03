@@ -49,9 +49,10 @@ export default {
     },
     overlayValue: true
   }),
+  mounted () {
+  },
   created () {
     eventBus.$on('updatedChunks', (d) => {
-      console.log('MeansChart:created:eventbus')
       this.chunkMeansIn = d.chunkMeans
       this.numChunks = d.numChunks
       this.filterMean = d.filterMean
@@ -59,8 +60,6 @@ export default {
   },
   watch: {
     'extent' () {
-      console.log('MeansChart:watch:extent')
-
       if (this.numChunks > 1) {
         this.overlayValue = false
         this.initializeMeansChart()
@@ -77,8 +76,7 @@ export default {
   },
   methods: {
     initializeMeansChart () {
-      console.log('initializeMeansChart:start')
-
+      // console.log('initializeMeansChart:start')
       this.scales.x = d3.scaleTime().range([0, this.width])
       this.scales.y = d3.scaleLinear().range([this.height, 0])
 
@@ -113,7 +111,7 @@ export default {
         .call(this.axes.y)
     },
     updateMeansChart () {
-      console.log('updateMeansChart:start', this.numChunks)
+      // console.log('updateMeansChart:start')
       this.chunkMeans = this.chunkMeansIn.slice()
       this.chunkMeans.push(this.filterMean)
 
@@ -161,7 +159,9 @@ export default {
 
       this.means.exit().remove()
 
+      this.means.select('.axis--xMeans').call(this.axes.x)
       this.means.select('.axis--yMeans').selectAll('.tick:last-of-type text').text('')
+      this.means.select('.axis--yMeans').call(this.axes.y)
     },
     dateParseY () {
       return d3.timeFormat('%j')

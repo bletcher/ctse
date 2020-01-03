@@ -43,7 +43,7 @@ export default {
   },
   watch: {
     'filledData' () {
-      console.log('RectChart:watch.filledData')
+      // console.log('RectChart:watch.filledData')
       this.initializeRectChart()
     }
   },
