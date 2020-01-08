@@ -38,15 +38,6 @@ export default {
       left: 40
     }
   }),
-  mounted () {
-    this.initializeRectChart()
-  },
-  watch: {
-    'filledData' () {
-      // console.log('RectChart:watch.filledData')
-      this.initializeRectChart()
-    }
-  },
   created () {
     eventBus.$on('updatedChunks', (d) => {
       this.chunksData = d.chunksData
@@ -55,9 +46,18 @@ export default {
       this.chunkCounters = d.chunkCounters
       this.numChunks = d.numChunks
 
-      this.updateFilterRect()
+      this.updateFilterRect() // equivalent to watching 'extent'
       this.updateChunkRects()
     })
+  },
+  mounted () {
+    this.initializeRectChart()
+  },
+  watch: {
+    'filledData' () {
+      // console.log('RectChart:watch.filledData')
+      this.initializeRectChart()
+    }
   },
   methods: {
     initializeRectChart () {
@@ -94,14 +94,16 @@ export default {
       rects.exit().remove()
     },
     enteredFilterRect (d, i, n) {
-      n[i].parentNode.appendChild(n[i]) // move to front
+      n[i].parentNode.appendChild(n[i]) // move rect to front
 
       d3.select(n[i])
         .attr('height', 5)
 
-      d3.select('.lineCFD')
+      let lineCFD = d3.select('.lineCFD')
         .attr('stroke-width', 5)
         .attr('stroke-opacity', 1)
+
+      lineCFD.node().parentNode.appendChild(lineCFD.node()) // move lineCFD to front
     },
     leftFilterRect (d, i, n) {
       d3.select(n[i])

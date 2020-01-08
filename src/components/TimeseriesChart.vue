@@ -75,7 +75,7 @@ export default {
       this.initializeTimeSeriesChart()
     },
     'extent' () {
-      // console.log('TimeSeriesChart:watch:extent')
+      console.log('TimeSeriesChart:watch:extent')
       this.updateTimeseriesChart()
     }
   },

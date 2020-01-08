@@ -50,16 +50,23 @@ export default {
     overlayValue: true
   }),
   mounted () {
+    console.log('mounted:meansChart')
   },
   created () {
+    console.log('created:meansChart')
     eventBus.$on('updatedChunks', (d) => {
       this.chunkMeansIn = d.chunkMeans
       this.numChunks = d.numChunks
       this.filterMean = d.filterMean
     })
+
+    // console.log('created:meansChart', this.numChunks, eventBus, eventBus$data)
+    // this.initializeMeansChart()
+    // this.updateMeansChart()
   },
   watch: {
     'extent' () {
+      console.log('watch:extent:meansChart')
       if (this.numChunks > 1) {
         this.overlayValue = false
         this.initializeMeansChart()
@@ -76,7 +83,7 @@ export default {
   },
   methods: {
     initializeMeansChart () {
-      // console.log('initializeMeansChart:start')
+      console.log('initializeMeansChart:start')
       this.scales.x = d3.scaleTime().range([0, this.width])
       this.scales.y = d3.scaleLinear().range([this.height, 0])
 
@@ -111,7 +118,7 @@ export default {
         .call(this.axes.y)
     },
     updateMeansChart () {
-      // console.log('updateMeansChart:start')
+      console.log('updateMeansChart:start')
       this.chunkMeans = this.chunkMeansIn.slice()
       this.chunkMeans.push(this.filterMean)
 
@@ -131,17 +138,22 @@ export default {
 
       circles.exit().remove()
       // ////////////////////////////////////
-
+      const getYear = d3.timeFormat('%Y')
       let lrChunkMeans = regressionLinear()
+        .x(d => getYear(d.minYear))
+        .y(d => d.valueMean)
+
+      let lrChunkMeansForChart = regressionLinear()
         .x(d => d.minYear)
         .y(d => d.valueMean)
 
       let lr = lrChunkMeans(this.chunkMeans)
+      let lrForChart = lrChunkMeansForChart(this.chunkMeans)
 
       this.means.selectAll('line').remove()
 
       this.means.append('line')
-        .datum(lr)
+        .datum(lrForChart)
         .attr('x1', d => this.scales.x((d[0][0])))
         .attr('x2', d => this.scales.x(d[1][0]))
         .attr('y1', d => this.scales.y(d[0][1]))
@@ -149,12 +161,20 @@ export default {
         .attr('stroke', 'steelblue')
       // //////////////////////////////////////
       this.means.selectAll('.rSq').remove()
+      this.means.selectAll('.slope').remove()
 
       this.means.append('text')
         .attr('class', 'rSq')
-        .attr('x', this.width - 150)
+        .attr('x', this.width - 140)
         .attr('y', this.height - 20)
-        .text('r-squared = ' + lr.rSquared.toFixed(2))
+        .text('r-squared = ' + lr.rSquared.toFixed(3))
+        .attr('font-family', 'sans-serif')
+
+      this.means.append('text')
+        .attr('class', 'slope')
+        .attr('x', this.width - 112)
+        .attr('y', this.height - 40)
+        .text('Slope = ' + lr.a.toFixed(3))
         .attr('font-family', 'sans-serif')
 
       this.means.exit().remove()

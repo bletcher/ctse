@@ -6,7 +6,6 @@
 
 <script>
 import * as d3 from 'd3'
-// import { eventBus } from '../main'
 
 export default {
   name: 'BrushChart',
@@ -55,7 +54,7 @@ export default {
       this.initializeBrushChart()
     },
     'extent' () {
-      // console.log('BrushChart:watch.extent')
+      console.log('BrushChart:watch.extent')
       this.updateBrushChart()
     }
   },

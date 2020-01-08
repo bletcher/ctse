@@ -14,106 +14,122 @@
       </v-btn>
     </v-app-bar>
     <v-content>
-      <v-row align="center" justify="start" class="ml-2">
-        <v-col class="d-flex" cols="3">
+      <v-row align="center" justify="start" class="ma-2">
+        <v-col class="d-flex" cols="6">
           <v-select
+            class="ma-2"
             :items="dataFileNames"
             v-model="selectedFileName"
-            label="Data files"
-            solo>
+            label="Data file"
+          >
+          </v-select>
+          <v-spacer></v-spacer>
+          <v-select
+            class="ma-2"
+            :items="timeStepsForSelect"
+            v-model="selectedTimeStep"
+            label="Data time step"
+          >
           </v-select>
         </v-col>
       </v-row>
       <v-container
-        fluid
         v-if="filledData"
       >
-        <v-tabs
-          v-model="tab"
+        <v-card
+          width="960"
+          class="ma-3"
         >
-          <v-tab href="#means">Means</v-tab>
-          <v-tab href="#timeseries">Time series</v-tab>
-          <v-tab href="#doy">By day of year</v-tab>
-        </v-tabs>
+          <v-tabs
+            v-model="tab" background-color="#edebf2"
+          >
+            <v-tab href="#means">Means</v-tab>
+            <v-tab href="#timeseries">Time series</v-tab>
+            <v-tab href="#doy">By day of year</v-tab>
+          </v-tabs>
 
-        <v-tabs-items v-model="tab">
-          <v-tab-item :key="1" value="means" transition="fade-transition">
-            <means-chart
-              :extent="brushExtent"
-            >
-            </means-chart>
-          </v-tab-item>
-          <v-tab-item :key="2" value="timeseries" transition="fade-transition">
-            <timeseries-chart
+          <v-tabs-items v-model="tab">
+            <v-tab-item :key="1" value="means" transition="fade-transition">
+              <means-chart
+                :extent="brushExtent"
+              >
+              </means-chart>
+            </v-tab-item>
+            <v-tab-item :key="2" value="timeseries" transition="fade-transition">
+              <timeseries-chart
+                :filledData="filledData"
+                :extent="brushExtent"
+              >
+              </timeseries-chart>
+            </v-tab-item>
+            <v-tab-item :key="3" value="doy" transition="fade-transition">
+              <allpoints-chart
+                :dataByDay="dataByDay"
+                :dataByDayOfYear="dataByDayOfYear"
+              >
+              </allpoints-chart>
+            </v-tab-item>
+          </v-tabs-items>
+          <div v-show="tab !== 'doy'">
+            <brush-chart
               :filledData="filledData"
               :extent="brushExtent"
-            >
-            </timeseries-chart>
-          </v-tab-item>
-          <v-tab-item :key="3" value="doy" transition="fade-transition">
-            <allpoints-chart
-              :dataByDay="dataByDay"
-              :dataByDayOfYear="dataByDayOfYear"
-            >
-            </allpoints-chart>
-          </v-tab-item>
-        </v-tabs-items>
+              @brushed="onBrush">
+            </brush-chart>
+            <rect-chart
+              :filledData="filledData"
+              :extent="brushExtent">
+            </rect-chart>
 
-        <brush-chart
-          :filledData="filledData"
-          :extent="brushExtent"
-          @brushed="onBrush">
-        </brush-chart>
-        <rect-chart
-          :filledData="filledData"
-          :extent="brushExtent">
-        </rect-chart>
+            <v-row align="center" justify="center" class="ml-2"
+            >
+              <v-col cols="2" sm="2" md="2">
+                <v-menu
+                  v-model="startDateMenu"
+                  :close-on-content-click="false"
+                  :nudge-right="140"
+                  transition="scale-transition"
+                  min-width="290px"
+                >
+                  <template v-slot:activator="{ on }">
+                    <v-text-field
+                      v-model="startDate"
+                      label="Start date"
+                      v-on="on"
+                    ></v-text-field>
+                  </template>
+                  <v-date-picker
+                    v-model="startDate"
+                    @input="startDateMenu = false; updateBrushExtentFromStartDate()"
+                  ></v-date-picker>
+                </v-menu>
+              </v-col>
 
-        <v-row align="center" justify="space-between" class="ml-2">
-          <v-col cols="2" sm="2" md="2">
-            <v-menu
-              v-model="startDateMenu"
-              :close-on-content-click="false"
-              :nudge-right="180"
-              transition="scale-transition"
-              min-width="290px"
-            >
-              <template v-slot:activator="{ on }">
-                <v-text-field
-                  v-model="startDate"
-                  label="Start date"
-                  v-on="on"
-                ></v-text-field>
-              </template>
-              <v-date-picker
-                v-model="startDate"
-                @input="startDateMenu = false; updateBrushExtentFromStartDate()"
-              ></v-date-picker>
-            </v-menu>
-          </v-col>
-          <v-spacer></v-spacer>
-          <v-col cols="2" sm="2" md="2">
-            <v-menu
-              v-model="endDateMenu"
-              :close-on-content-click="false"
-              :nudge-left="295"
-              transition="scale-transition"
-              min-width="290px"
-            >
-              <template v-slot:activator="{ on }">
-                <v-text-field
-                  v-model="endDate"
-                  label="End date"
-                  v-on="on"
-                ></v-text-field>
-              </template>
-              <v-date-picker
-                v-model="endDate"
-                @input="endDateMenu = false; updateBrushExtentFromEndDate()"
-              ></v-date-picker>
-            </v-menu>
-          </v-col>
-        </v-row>
+              <v-col cols="2" sm="2" md="2">
+                <v-menu
+                  v-model="endDateMenu"
+                  :close-on-content-click="false"
+                  :nudge-left="295"
+                  transition="scale-transition"
+                  min-width="290px"
+                >
+                  <template v-slot:activator="{ on }">
+                    <v-text-field
+                      v-model="endDate"
+                      label="End date"
+                      v-on="on"
+                    ></v-text-field>
+                  </template>
+                  <v-date-picker
+                    v-model="endDate"
+                    @input="endDateMenu = false; updateBrushExtentFromEndDate()"
+                  ></v-date-picker>
+                </v-menu>
+
+              </v-col>
+            </v-row>
+          </div>
+        </v-card>
       </v-container>
     </v-content>
   </v-app>
@@ -130,6 +146,7 @@ import MeansChart from '@/components/MeansChart'
 const formatters = {
   mdy: d3.timeFormat('%B %d, %Y'),
   julian: d3.timeFormat('%j'),
+  month: d3.timeFormat('%m'),
   parseDatePicked: d3.timeParse('%Y-%m-%d'),
   ymd: d3.timeFormat('%Y-%m-%d')
 }
@@ -138,24 +155,26 @@ export default {
   name: 'App',
 
   components: {
+    MeansChart,
     TimeseriesChart,
-    BrushChart,
-    RectChart,
     AllpointsChart,
-    MeansChart
+    BrushChart,
+    RectChart
   },
   data: () => ({
     rawData: [],
     brushExtent: null,
     movingMeanWindow: 10,
-    dataFileNames: ['1949884.csv', '1949884_partial.csv', 'mitchellFromSHEDS.csv'], // , 'co2_mm_mlo.csv'],
+    dataFileNames: ['1949884.csv', '1949884_partial.csv', 'mitchellFromSHEDS.csv', 'co2_mm_mlo.csv'],
     selectedFileName: null,
     startDate: null,
     endDate: null,
     startDateMenu: false,
     endDateMenu: false,
     tab: 'doy',
-    overlayValue: false
+    overlayValue: false,
+    timeStepsForSelect: ['Daily', 'Monthly', 'Yearly'],
+    selectedTimeStep: 'Daily'
   }),
   mounted () {
   },
@@ -177,9 +196,18 @@ export default {
 
       let filled = []
       let startIndex = 0
+      let rawDataFullRange = []
 
       // get date range for all data. Will fill in missing observations
-      const rawDataFullRange = d3.timeDay.range(d3.min(this.rawData, d => d.date), d3.max(this.rawData, d => d.date))
+      if (this.selectedTimeStep === 'Daily') {
+        rawDataFullRange = d3.timeDay.range(d3.min(this.rawData, d => d.date), d3.max(this.rawData, d => d.date))
+      } else if (this.selectedTimeStep === 'Monthly') {
+        rawDataFullRange = d3.timeMonth.range(d3.min(this.rawData, d => d.date), d3.max(this.rawData, d => d.date))
+      } else if (this.selectedTimeStep === 'Yearly') {
+        rawDataFullRange = d3.timeYear.range(d3.min(this.rawData, d => d.date), d3.max(this.rawData, d => d.date))
+      } else {
+        alert('Unknown time step')
+      }
 
       // get all dates in dataByDay
       const dataByDayDates = this.dataByDay.map(d => d.key)
@@ -295,3 +323,9 @@ export default {
   }
 }
 </script>
+
+<style>
+  .container {
+    max-width: 984px;
+  }
+</style>
