@@ -8,6 +8,7 @@ export const eventBus = new Vue({
   methods: {
     emitChunks (d) {
       this.$emit('updatedChunks', d)
+      // console.log('main:emitChunks', d)
     }
   }
 })

@@ -252,11 +252,12 @@ export default {
       let i0 = d3.bisectLeft(d.map(dd => dd.date2), xPos, 1) - 1
 
       let parseDateY = d3.timeFormat('%Y')
-      let minYear = parseDateY(d3.min(d.map(dd => dd.date)))
+      // let minYear = parseDateY(d3.min(d.map(dd => dd.date)))
+      let medianYear = parseDateY(d3.median(d.map(dd => dd.date)))
 
       this.chartElements.dot.attr('transform', `translate(${this.scales.x(d[i0].date2)},${this.scales.yCFD(d[i0].cumulValue)})`)
-      // doesn't work...this.chartElements.dot.parentNode.appendChild(this.chartElements.dot) // move to front
-      this.chartElements.dot.select('text').text(minYear)
+      this.chartElements.dot.node().parentNode.appendChild(this.chartElements.dot.node()) // move to front
+      this.chartElements.dot.select('text').text(medianYear) // .text(minYear)
     },
     updateTimeseriesChart () {
       console.log('updateTimeseriesChart:start')

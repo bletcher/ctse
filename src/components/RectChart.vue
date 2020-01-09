@@ -46,8 +46,8 @@ export default {
       this.chunkCounters = d.chunkCounters
       this.numChunks = d.numChunks
 
-      this.updateFilterRect() // equivalent to watching 'extent'
-      this.updateChunkRects()
+      // this.updateFilterRect() // equivalent to watching 'extent'
+      // this.updateChunkRects()
     })
   },
   mounted () {
@@ -57,6 +57,11 @@ export default {
     'filledData' () {
       // console.log('RectChart:watch.filledData')
       this.initializeRectChart()
+    },
+    'extent' () {
+      console.log('RectChart:watch:extent')
+      this.updateFilterRect()
+      this.updateChunkRects()
     }
   },
   methods: {

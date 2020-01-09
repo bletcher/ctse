@@ -6,6 +6,7 @@
       :value="overlayValue"
     >
     <p>Means chart not shown for less than 3 chunks</p>
+    <p>For now, if > 3 chunks, click on the brush to activate the chart for the first time</p>
     </v-overlay>
   </div>
 </template>
@@ -50,7 +51,6 @@ export default {
     overlayValue: true
   }),
   mounted () {
-    console.log('mounted:meansChart')
   },
   created () {
     console.log('created:meansChart')
@@ -59,10 +59,6 @@ export default {
       this.numChunks = d.numChunks
       this.filterMean = d.filterMean
     })
-
-    // console.log('created:meansChart', this.numChunks, eventBus, eventBus$data)
-    // this.initializeMeansChart()
-    // this.updateMeansChart()
   },
   watch: {
     'extent' () {

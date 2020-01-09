@@ -165,7 +165,7 @@ export default {
     rawData: [],
     brushExtent: null,
     movingMeanWindow: 10,
-    dataFileNames: ['1949884.csv', '1949884_partial.csv', 'mitchellFromSHEDS.csv', 'co2_mm_mlo.csv'],
+    dataFileNames: ['1949884.csv', '1949884_partial.csv', 'mitchellFromSHEDS.csv', 'co2_mm_mlo.csv', 'Hartford_Bradley_dailyP_inches_1949_2019.csv'],
     selectedFileName: null,
     startDate: null,
     endDate: null,
@@ -302,7 +302,10 @@ export default {
       console.log('getData:start')
       // for now
       let parseDate = null
-      if (this.selectedFileName.includes('1949') || this.selectedFileName === 'co2_mm_mlo.csv') {
+      if (this.selectedFileName === '1949884.csv' ||
+          this.selectedFileName === '1949884_partial.csv' ||
+          this.selectedFileName === 'co2_mm_mlo.csv' ||
+          this.selectedFileName === 'Hartford_Bradley_dailyP_inches_1949_2019.csv') {
         parseDate = d3.timeParse('%-m/%-d/%Y')
       } else if (this.selectedFileName === 'mitchellFromSHEDS.csv') {
         parseDate = d3.timeParse('%-m/%-d/%Y %H:%M')
