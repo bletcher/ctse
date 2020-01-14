@@ -20,17 +20,19 @@
             label="Select a CSV file"
             small-chips
             accept=".csv"
+            hint="Date format = mm/dd/yyyy"
+            persistent-hint
             v-model="inputFileName"
           >
           </v-file-input>
           <v-spacer></v-spacer>
-          <v-select
+          <v-combobox
             class="ma-2"
-            :items="dataFileNames"
-            v-model="selectedFileName"
-            label="Data file"
+            :items="depVarNames"
+            v-model="selectedDepVar"
+            label="Edit dependent varable"
           >
-          </v-select>
+          </v-combobox>
           <v-spacer></v-spacer>
           <v-select
             class="ma-2"
@@ -60,6 +62,7 @@
             <v-tab-item :key="1" value="means" transition="fade-transition">
               <means-chart
                 :extent="brushExtent"
+                :selectedDepVar="selectedDepVar"
               >
               </means-chart>
             </v-tab-item>
@@ -67,6 +70,7 @@
               <timeseries-chart
                 :filledData="filledData"
                 :extent="brushExtent"
+                :selectedDepVar="selectedDepVar"
               >
               </timeseries-chart>
             </v-tab-item>
@@ -74,6 +78,7 @@
               <allpoints-chart
                 :dataByDay="dataByDay"
                 :dataByDayOfYear="dataByDayOfYear"
+                :selectedDepVar="selectedDepVar"
               >
               </allpoints-chart>
             </v-tab-item>
@@ -175,9 +180,8 @@ export default {
     movingMeanWindow: 10,
     inputFileName: null,
     fileReaderIn: null,
-    dataFileNames: ['1949884.csv', '1949884_partial.csv', 'mitchellFromSHEDS.csv', 'co2_mm_mlo.csv',
-      'lake_sim.csv', 'Hartford_Bradley_dailyP_inches_1949_2019.csv'],
-    selectedFileName: null,
+    depVarNames: ['Temperature', 'CO2', 'Stream flow'],
+    selectedDepVar: 'Temperature',
     startDate: null,
     endDate: null,
     startDateMenu: false,
@@ -185,14 +189,11 @@ export default {
     tab: 'doy',
     overlayValue: false,
     timeStepsForSelect: ['Daily', 'Monthly', 'Yearly'],
-    selectedTimeStep: 'Daily'
+    selectedTimeStep: null
   }),
   mounted () {
   },
   watch: {
-    selectedFileName () {
-      this.getData()
-    },
     inputFileName () {
       if (this.inputFileName) this.getDataInput()
     },
@@ -347,7 +348,7 @@ export default {
         let reader = new FileReader()
         reader.readAsText(this.inputFileName, 'UTF-8')
 
-        reader.onload = () => {
+        reader.onloadend = () => {
           let csv = reader.result
           let csvFormatted = this.csvJSON(csv)
 
@@ -363,9 +364,10 @@ export default {
             csvFormatted[i].day = formatters.mdy(csvFormatted[i].date)
             csvFormatted[i].value = +csvFormatted[i].value
           }
-          // console.log(csvFormatted)
+          console.log('in getDataInput', csvFormatted)
           this.rawData = Object.freeze(csvFormatted)
-        }
+          this.setTimeStep()
+        } // may need to make this asynchronous
         reader.onerror = function (evt) {
           if (evt.target.error.name === 'NotReadableError') {
             alert('Cannot read file !')
@@ -393,6 +395,17 @@ export default {
       })
       result.pop() // remove the last item because undefined values
       return result
+    },
+    setTimeStep () {
+      // Check time step, assuming consistent time step
+      let interval = d3.timeDay.count(this.rawData[0].date, this.rawData[1].date)
+      if (interval < 3) {
+        this.selectedTimeStep = 'Daily'
+      } else if (interval < 35) {
+        this.selectedTimeStep = 'Monthly'
+      } else {
+        this.selectedTimeStep = 'Yearly'
+      }
     }
   }
 }

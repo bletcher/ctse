@@ -19,6 +19,11 @@ export default {
       type: Array,
       required: false,
       defaults: () => []
+    },
+    selectedDepVar: {
+      type: String,
+      required: false,
+      defaults: () => ''
     }
   },
   data: () => ({
@@ -38,6 +43,10 @@ export default {
   watch: {
     'dataByDayOfYear' () {
       // console.log('AllpointsChart:watch.dataByDayOfYear')
+      this.initializeAllPointsChart()
+    },
+    'selectedDepVar' () {
+      console.log('AllPointsChart:watch:selectedDepVar')
       this.initializeAllPointsChart()
     }
   },
@@ -87,7 +96,7 @@ export default {
         .call(g => g.select('.tick:last-of-type text').clone()
           .attr('x', 6)
           .attr('text-anchor', 'start')
-          .text('Temperature (C)'))
+          .text(this.selectedDepVar))
 
       svgAllPoints.append('g')
         .attr('class', 'axis axis--xAll')

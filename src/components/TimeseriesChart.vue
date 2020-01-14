@@ -20,6 +20,11 @@ export default {
       type: Array,
       required: false,
       defaults: () => []
+    },
+    selectedDepVar: {
+      type: String,
+      required: false,
+      defaults: () => ''
     }
   },
 
@@ -77,6 +82,10 @@ export default {
     'extent' () {
       console.log('TimeSeriesChart:watch:extent')
       this.updateTimeseriesChart()
+    },
+    'selectedDepVar' () {
+      console.log('TimeSeriesChart:watch:selectedDepVar')
+      this.updateTimeseriesChart()
     }
   },
   computed: {
@@ -118,7 +127,8 @@ export default {
           .attr('x', 6)
           .attr('text-anchor', 'start')
           // .attr('font-weight', 'bold')
-          .text('Temperature (C)'))
+          .text(this.selectedDepVar)
+        )
 
       this.axes.yCFD = g => g
         .call(d3.axisRight(this.scales.yCFD))
@@ -126,7 +136,8 @@ export default {
           .attr('x', -6)
           .attr('text-anchor', 'end')
         // .attr('font-weight', 'bold')
-          .text('Cumulative Temperature (C)'))
+          .text('Cumulative ' + this.selectedDepVar)
+        )
         // .call(cons)
 
       /*

@@ -23,6 +23,11 @@ export default {
       type: Array,
       required: false,
       defaults: () => []
+    },
+    selectedDepVar: {
+      type: String,
+      required: false,
+      defaults: () => ''
     }
   },
   data: () => ({
@@ -71,6 +76,10 @@ export default {
         d3.select('.means-chart').selectAll('svg > *').remove()
         this.overlayValue = true
       }
+    },
+    'selectedDepVar' () {
+      console.log('AllPointsChart:watch:selectedDepVar')
+      this.initializeAllPointsChart()
     }
   },
   computed: {
@@ -102,7 +111,7 @@ export default {
           .attr('x', 6)
           .attr('text-anchor', 'start')
           // .attr('font-weight', 'bold')
-          .text('Mean Temperature (C)'))
+          .text(this.selectedDepVar))
 
       this.means.append('g')
         .attr('class', 'axis axis--xMeans')
