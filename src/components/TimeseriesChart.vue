@@ -445,6 +445,7 @@ export default {
       lines.exit().remove()
     },
     enteredChunkLine (d, i, n) {
+      // console.log('enteredChunkLine: start', n[i])
       n[i].parentNode.appendChild(n[i]) // move to front
 
       d3.select(n[i])
@@ -456,6 +457,7 @@ export default {
       let rectFiltered = this.getRectFromPath(n[i])
       d3.select(rectFiltered)
         .attr('height', 5)
+      // console.log('enteredChunkLine: end', n[i])
     },
     leftChunkLine (d, i, n) {
       d3.select(n[i])

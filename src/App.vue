@@ -15,7 +15,15 @@
     </v-app-bar>
     <v-content>
       <v-row align="center" justify="start" class="ma-2">
-        <v-col class="d-flex" cols="6">
+        <v-col class="d-flex" cols="12">
+          <v-file-input
+            label="Select a CSV file"
+            small-chips
+            accept=".csv"
+            v-model="inputFileName"
+          >
+          </v-file-input>
+          <v-spacer></v-spacer>
           <v-select
             class="ma-2"
             :items="dataFileNames"
@@ -28,7 +36,7 @@
             class="ma-2"
             :items="timeStepsForSelect"
             v-model="selectedTimeStep"
-            label="Data time step"
+            label="Time step"
           >
           </v-select>
         </v-col>
@@ -165,7 +173,10 @@ export default {
     rawData: [],
     brushExtent: null,
     movingMeanWindow: 10,
-    dataFileNames: ['1949884.csv', '1949884_partial.csv', 'mitchellFromSHEDS.csv', 'co2_mm_mlo.csv', 'Hartford_Bradley_dailyP_inches_1949_2019.csv'],
+    inputFileName: null,
+    fileReaderIn: null,
+    dataFileNames: ['1949884.csv', '1949884_partial.csv', 'mitchellFromSHEDS.csv', 'co2_mm_mlo.csv',
+      'lake_sim.csv', 'Hartford_Bradley_dailyP_inches_1949_2019.csv'],
     selectedFileName: null,
     startDate: null,
     endDate: null,
@@ -181,6 +192,9 @@ export default {
   watch: {
     selectedFileName () {
       this.getData()
+    },
+    inputFileName () {
+      if (this.inputFileName) this.getDataInput()
     },
     filledData () {
       console.log('App:watch:filledData')
@@ -305,7 +319,8 @@ export default {
       if (this.selectedFileName === '1949884.csv' ||
           this.selectedFileName === '1949884_partial.csv' ||
           this.selectedFileName === 'co2_mm_mlo.csv' ||
-          this.selectedFileName === 'Hartford_Bradley_dailyP_inches_1949_2019.csv') {
+          this.selectedFileName === 'Hartford_Bradley_dailyP_inches_1949_2019.csv' ||
+          this.selectedFileName === 'lake_sim.csv') {
         parseDate = d3.timeParse('%-m/%-d/%Y')
       } else if (this.selectedFileName === 'mitchellFromSHEDS.csv') {
         parseDate = d3.timeParse('%-m/%-d/%Y %H:%M')
@@ -322,6 +337,62 @@ export default {
           this.rawData = Object.freeze(dat)
         })
         .catch(error => console.error(error))
+    },
+    getDataInput (e) {
+      console.log('loadCSV', this.inputFileName)
+
+      let parseDate = null
+
+      if (window.FileReader) {
+        let reader = new FileReader()
+        reader.readAsText(this.inputFileName, 'UTF-8')
+
+        reader.onload = () => {
+          let csv = reader.result
+          let csvFormatted = this.csvJSON(csv)
+
+          // clunky parsing for now
+          if (csvFormatted[0].date.length < 11) {
+            parseDate = d3.timeParse('%-m/%-d/%Y')
+          } else {
+            parseDate = d3.timeParse('%-m/%-d/%Y %H:%M')
+          }
+          // console.log(csvFormatted)
+          for (let i = 0; i < csvFormatted.length; i++) {
+            csvFormatted[i].date = parseDate(csvFormatted[i].date)
+            csvFormatted[i].day = formatters.mdy(csvFormatted[i].date)
+            csvFormatted[i].value = +csvFormatted[i].value
+          }
+          // console.log(csvFormatted)
+          this.rawData = Object.freeze(csvFormatted)
+        }
+        reader.onerror = function (evt) {
+          if (evt.target.error.name === 'NotReadableError') {
+            alert('Cannot read file !')
+          }
+        }
+      } else {
+        alert('FileReader is not supported in this browser.')
+      }
+    },
+    csvJSON (csv) {
+      let lines = csv.split('\n')
+      let result = []
+      let headers = lines[0].split(',')
+
+      lines.map((line, indexLine) => {
+        if (indexLine < 1) return // Jump header line
+
+        const obj = {}
+        let currentline = line.split(',')
+
+        headers.map((header, indexHeader) => {
+          obj[header.trim()] = currentline[indexHeader]
+        })
+        result.push(obj)
+      })
+      result.pop() // remove the last item because undefined values
+      return result
     }
   }
 }
