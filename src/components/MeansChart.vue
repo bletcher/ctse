@@ -78,8 +78,8 @@ export default {
       }
     },
     'selectedDepVar' () {
-      console.log('AllPointsChart:watch:selectedDepVar')
-      this.initializeAllPointsChart()
+      console.log('MeansChart:watch:selectedDepVar')
+      this.updateMeansChart()
     }
   },
   computed: {

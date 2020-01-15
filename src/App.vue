@@ -1,6 +1,8 @@
 <template>
   <v-app>
+
     <v-app-bar app clipped-left dark>
+      <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
       <v-toolbar-title class="headline">
         <span>SHEDS</span>
         <span class="font-weight-light px-2">|</span>
@@ -13,36 +15,90 @@
         <v-icon small left>mdi-home</v-icon> SHEDS
       </v-btn>
     </v-app-bar>
+
     <v-content>
-      <v-row align="center" justify="start" class="ma-2">
-        <v-col class="d-flex" cols="12">
-          <v-file-input
-            label="Select a CSV file"
-            small-chips
-            accept=".csv"
-            hint="Date format = mm/dd/yyyy"
-            persistent-hint
-            v-model="inputFileName"
-          >
-          </v-file-input>
-          <v-spacer></v-spacer>
-          <v-combobox
-            class="ma-2"
-            :items="depVarNames"
-            v-model="selectedDepVar"
-            label="Edit dependent varable"
-          >
-          </v-combobox>
-          <v-spacer></v-spacer>
-          <v-select
-            class="ma-2"
-            :items="timeStepsForSelect"
-            v-model="selectedTimeStep"
-            label="Time step"
-          >
-          </v-select>
-        </v-col>
-      </v-row>
+     <v-navigation-drawer
+       v-model="drawer"
+       app
+       clipped
+     >
+      <v-list
+        class="grey lighten-4"
+      >
+        <v-select
+          label="Select an example CSV file"
+          :items="selectedFileNames"
+          v-model="selectedFileName"
+          prepend-icon="mdi-file-upload-outline"
+        >
+        </v-select>
+        <v-divider
+          dark
+          class="my-3 white"
+        ></v-divider>
+        <v-file-input
+          label="Upload a CSV file"
+          small-chips
+          accept=".csv"
+          v-model="inputFileName"
+          class="pa-4 pt-6 pb-1"
+        >
+        </v-file-input>
+
+        <v-dialog
+          v-model="dialogs.about"
+          scrollable
+          width="600">
+          <template v-slot:activator="{ on }">
+            <v-btn small top right rounded v-on="on">
+              <v-icon size="20" left>mdi-alert-circle-outline</v-icon> File format
+            </v-btn>
+          </template>
+
+          <v-card>
+            <v-toolbar dense color="grey lighten-2">
+              <strong>File format</strong>
+              <v-spacer></v-spacer>
+              <v-btn height="24" width="24" icon @click="dialogs.about = false" class="grey darken-1 elevation-2 mr-0" dark>
+                <v-icon small>mdi-close</v-icon>
+              </v-btn>
+            </v-toolbar>
+
+            <v-card-text class="mt-2">
+              <p>The csv file should have two columns, one for date and one for the time-series variable.</p>
+              <p>The first row should be 'date,value'. For now, data shold be formatted 'mm/dd/yyyy', e.g. '04/10/2020'. Value can be any number.</p>
+
+            </v-card-text>
+          </v-card>
+        </v-dialog>
+
+        <v-divider
+          dark
+          class="my-3 white"
+        ></v-divider>
+        <v-combobox
+          :items="depVarNames"
+          v-model="selectedDepVar"
+          label="Edit dependent variable name"
+          prepend-icon="mdi-iframe-variable-outline"
+          class="pa-4 pt-8"
+        >
+        </v-combobox>
+        <v-divider
+          dark
+          class="my-3 white"
+        ></v-divider>
+        <v-select
+          :items="timeStepsForSelect"
+          v-model="selectedTimeStep"
+          label="Time step"
+          prepend-icon="mdi-timer"
+          class="pa-4 pt-8"
+        >
+        </v-select>
+      </v-list>
+    </v-navigation-drawer>
+    
       <v-container
         v-if="filledData"
       >
@@ -180,6 +236,8 @@ export default {
     movingMeanWindow: 10,
     inputFileName: null,
     fileReaderIn: null,
+    selectedFileNames: ['1949884.csv', 'co2_mm_mlo.csv', 'Hartford_Bradley_dailyP_inches_1949_2019.csv', 'lake_sim.csv'],
+    selectedFileName: null,
     depVarNames: ['Temperature', 'CO2', 'Stream flow'],
     selectedDepVar: 'Temperature',
     startDate: null,
@@ -189,13 +247,24 @@ export default {
     tab: 'doy',
     overlayValue: false,
     timeStepsForSelect: ['Daily', 'Monthly', 'Yearly'],
-    selectedTimeStep: null
+    selectedTimeStep: null,
+    drawer: true,
+    dialogs: {
+      about: false
+    }
   }),
   mounted () {
   },
   watch: {
+    selectedFileName () {
+      this.getData()
+      this.inputFileName = null
+    },
     inputFileName () {
-      if (this.inputFileName) this.getDataInput()
+      if (this.inputFileName) {
+        this.getDataInput()
+        this.selectedFileName = null
+      }  
     },
     filledData () {
       console.log('App:watch:filledData')
@@ -336,6 +405,7 @@ export default {
       })
         .then(dat => {
           this.rawData = Object.freeze(dat)
+          this.setTimeStep()
         })
         .catch(error => console.error(error))
     },
