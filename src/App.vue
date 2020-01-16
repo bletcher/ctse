@@ -17,88 +17,86 @@
     </v-app-bar>
 
     <v-content>
-     <v-navigation-drawer
-       v-model="drawer"
-       app
-       clipped
-     >
-      <v-list
-        class="grey lighten-4"
+      <v-navigation-drawer
+        v-model="drawer"
+        app
+        clipped
       >
-        <v-select
-          label="Select an example CSV file"
-          :items="selectedFileNames"
-          v-model="selectedFileName"
-          prepend-icon="mdi-file-upload-outline"
+        <v-list
+          class="grey lighten-4"
         >
-        </v-select>
-        <v-divider
-          dark
-          class="my-3 white"
-        ></v-divider>
-        <v-file-input
-          label="Upload a CSV file"
-          small-chips
-          accept=".csv"
-          v-model="inputFileName"
-          class="pa-4 pt-6 pb-1"
-        >
-        </v-file-input>
+          <v-select
+            label="Select an example CSV file"
+            :items="selectedFileNames"
+            v-model="selectedFileName"
+            prepend-icon="mdi-file-upload-outline"
+            class="pa-4 pt-6"
+          >
+          </v-select>
+          <v-divider
+            dark
+            class="my-3 white"
+          ></v-divider>
+          <v-file-input
+            label="Upload a CSV file"
+            small-chips
+            accept=".csv"
+            v-model="inputFileName"
+            class="pa-4 pt-6 pb-1"
+          >
+          </v-file-input>
 
-        <v-dialog
-          v-model="dialogs.about"
-          scrollable
-          width="600">
-          <template v-slot:activator="{ on }">
-            <v-btn small top right rounded v-on="on">
-              <v-icon size="20" left>mdi-alert-circle-outline</v-icon> File format
-            </v-btn>
-          </template>
-
-          <v-card>
-            <v-toolbar dense color="grey lighten-2">
-              <strong>File format</strong>
-              <v-spacer></v-spacer>
-              <v-btn height="24" width="24" icon @click="dialogs.about = false" class="grey darken-1 elevation-2 mr-0" dark>
-                <v-icon small>mdi-close</v-icon>
+          <v-dialog
+            v-model="dialogs.about"
+            scrollable
+            width="600">
+            <template v-slot:activator="{ on }">
+              <v-btn v-on="on" x-small top rounded :style="{left: '50%', transform:'translateX(-50%)'}">
+                <v-icon size="16">mdi-alert-circle-outline</v-icon> File format
               </v-btn>
-            </v-toolbar>
+            </template>
 
-            <v-card-text class="mt-2">
-              <p>The csv file should have two columns, one for date and one for the time-series variable.</p>
-              <p>The first row should be 'date,value'. For now, data shold be formatted 'mm/dd/yyyy', e.g. '04/10/2020'. Value can be any number.</p>
+            <v-card>
+              <v-toolbar dense color="grey lighten-2">
+                <strong>File format</strong>
+                <v-spacer></v-spacer>
+                <v-btn height="24" width="24" icon @click="dialogs.about = false" class="grey darken-1 elevation-2 mr-0" dark>
+                  <v-icon small>mdi-close</v-icon>
+                </v-btn>
+              </v-toolbar>
 
-            </v-card-text>
-          </v-card>
-        </v-dialog>
-
-        <v-divider
-          dark
-          class="my-3 white"
-        ></v-divider>
-        <v-combobox
-          :items="depVarNames"
-          v-model="selectedDepVar"
-          label="Edit dependent variable name"
-          prepend-icon="mdi-iframe-variable-outline"
-          class="pa-4 pt-8"
+              <v-card-text class="mt-2">
+                <p>The csv file should have two columns, one for date and one for the time-series variable.</p>
+                <p>The first row should be 'date,value'. For now, date data shold be formatted 'mm/dd/yyyy', e.g. '04/10/2020'. Value can be any number.</p>
+              </v-card-text>
+            </v-card>
+          </v-dialog>
+        </v-list>
+        <v-list
+          class="grey lighten-2"
         >
-        </v-combobox>
-        <v-divider
-          dark
-          class="my-3 white"
-        ></v-divider>
-        <v-select
-          :items="timeStepsForSelect"
-          v-model="selectedTimeStep"
-          label="Time step"
-          prepend-icon="mdi-timer"
-          class="pa-4 pt-8"
-        >
-        </v-select>
-      </v-list>
-    </v-navigation-drawer>
-    
+          <v-combobox
+            :items="depVarNames"
+            v-model="selectedDepVar"
+            label="Edit dependent variable name"
+            prepend-icon="mdi-chart-line"
+            class="pa-4 pt-8"
+          >
+          </v-combobox>
+          <v-divider
+            dark
+            class="my-3 white"
+          ></v-divider>
+          <v-select
+            :items="timeStepsForSelect"
+            v-model="selectedTimeStep"
+            label="Time step"
+            prepend-icon="mdi-timer"
+            class="pa-4 pt-8"
+          >
+          </v-select>
+        </v-list>
+      </v-navigation-drawer>
       <v-container
         v-if="filledData"
       >
@@ -236,10 +234,10 @@ export default {
     movingMeanWindow: 10,
     inputFileName: null,
     fileReaderIn: null,
-    selectedFileNames: ['1949884.csv', 'co2_mm_mlo.csv', 'Hartford_Bradley_dailyP_inches_1949_2019.csv', 'lake_sim.csv'],
+    selectedFileNames: ['OregonTemp.csv', 'co2MaunaLoa.csv', 'BradleyPrecipInches.csv', 'lakeSimulation.csv'],
     selectedFileName: null,
-    depVarNames: ['Temperature', 'CO2', 'Stream flow'],
-    selectedDepVar: 'Temperature',
+    depVarNames: ['Temperature (C)', 'Temperature (F)', 'CO2', 'Stream flow', 'Precipitation (mm)', 'Precipitation (in)'],
+    selectedDepVar: 'Temperature (C)',
     startDate: null,
     endDate: null,
     startDateMenu: false,
@@ -264,7 +262,7 @@ export default {
       if (this.inputFileName) {
         this.getDataInput()
         this.selectedFileName = null
-      }  
+      }
     },
     filledData () {
       console.log('App:watch:filledData')
@@ -386,11 +384,10 @@ export default {
       console.log('getData:start')
       // for now
       let parseDate = null
-      if (this.selectedFileName === '1949884.csv' ||
-          this.selectedFileName === '1949884_partial.csv' ||
-          this.selectedFileName === 'co2_mm_mlo.csv' ||
-          this.selectedFileName === 'Hartford_Bradley_dailyP_inches_1949_2019.csv' ||
-          this.selectedFileName === 'lake_sim.csv') {
+      if (this.selectedFileName === 'OregonTemp.csv' ||
+          this.selectedFileName === 'co2MaunaLoa.csv' ||
+          this.selectedFileName === 'BradleyPrecipInches.csv' ||
+          this.selectedFileName === 'lakeSimulation.csv') {
         parseDate = d3.timeParse('%-m/%-d/%Y')
       } else if (this.selectedFileName === 'mitchellFromSHEDS.csv') {
         parseDate = d3.timeParse('%-m/%-d/%Y %H:%M')

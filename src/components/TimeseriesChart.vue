@@ -8,6 +8,8 @@
 import * as d3 from 'd3'
 import { eventBus } from '../main'
 
+const oneDay = 24 * 60 * 60 * 1000
+
 export default {
   name: 'TimeseriesChart',
   props: {
@@ -62,7 +64,6 @@ export default {
     maxCumulAll: [],
     maxOfMaxCumul: null,
     filterDaysForRect: [],
-    oneDay: 24 * 60 * 60 * 1000,
     numChunks: null,
     chunkCounters: null,
     chunkDaysForRect: [],
@@ -127,6 +128,7 @@ export default {
           .attr('x', 6)
           .attr('text-anchor', 'start')
           // .attr('font-weight', 'bold')
+          .attr('fill', 'steelblue')
           .text(this.selectedDepVar)
         )
 
@@ -136,6 +138,7 @@ export default {
           .attr('x', -6)
           .attr('text-anchor', 'end')
         // .attr('font-weight', 'bold')
+          .attr('fill', 'red')
           .text('Cumulative ' + this.selectedDepVar)
         )
         // .call(cons)
@@ -305,9 +308,9 @@ export default {
       })
     },
     updateChunks () {
-      let numDaysBrush = Math.round(Math.abs((this.extent[1] - this.extent[0]) / this.oneDay))
-      let numDaysBeginningToBrush = Math.round(Math.abs((this.extent[0] - this.scales.xBrush.domain()[0]) / this.oneDay))
-      let numDaysBrushToEnd = Math.round(Math.abs((this.scales.xBrush.domain()[1] - this.extent[1]) / this.oneDay))
+      let numDaysBrush = Math.round(Math.abs((this.extent[1] - this.extent[0]) / oneDay))
+      let numDaysBeginningToBrush = Math.round(Math.abs((this.extent[0] - this.scales.xBrush.domain()[0]) / oneDay))
+      let numDaysBrushToEnd = Math.round(Math.abs((this.scales.xBrush.domain()[1] - this.extent[1]) / oneDay))
 
       this.numChunks = 0
 
@@ -328,8 +331,8 @@ export default {
       this.chunkDaysForRect = []
       let chunkBefore = false
       let chunkAfter = false
-      let numDaysBeforeBrush = Math.round(Math.abs(this.extent[0] - this.scales.xBrush.domain()[0]) / this.oneDay)
-      let numDaysAfterBrush = Math.round(Math.abs(this.scales.xBrush.domain()[1] - this.extent[1]) / this.oneDay)
+      let numDaysBeforeBrush = Math.round(Math.abs(this.extent[0] - this.scales.xBrush.domain()[0]) / oneDay)
+      let numDaysAfterBrush = Math.round(Math.abs(this.scales.xBrush.domain()[1] - this.extent[1]) / oneDay)
 
       if (numDaysBrush < numDaysBeforeBrush) { chunkBefore = true }
       if (numDaysBrush < numDaysAfterBrush) { chunkAfter = true }
@@ -512,11 +515,6 @@ export default {
         .attr('d', this.lineCFD(this.scales))
         .on('mouseenter', this.enteredLineCFD)
         .on('mouseleave', this.leftLineCFD)
-    },
-    'd3.selection.prototype.moveToFront': function () {
-      return this.each(function () {
-        this.parentNode.appendChild(this)
-      })
     }
   }
 }
