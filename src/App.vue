@@ -141,14 +141,18 @@
             <brush-chart
               :filledData="filledData"
               :extent="brushExtent"
-              @brushed="onBrush">
+              @brushed="onBrush"
+              class="mb-0 pb-0"
+            >
             </brush-chart>
             <rect-chart
               :filledData="filledData"
-              :extent="brushExtent">
+              :extent="brushExtent"
+              class="mt-0 pt-0"
+            >
             </rect-chart>
-
-            <v-row align="center" justify="center" class="ml-2"
+            <v-spacer></v-spacer>
+            <v-row align="bottom" justify="center" class="ml-2"
             >
               <v-col cols="2" sm="2" md="2">
                 <v-menu
@@ -234,7 +238,7 @@ export default {
     movingMeanWindow: 10,
     inputFileName: null,
     fileReaderIn: null,
-    selectedFileNames: ['OregonTemp.csv', 'co2MaunaLoa.csv', 'BradleyPrecipInches.csv', 'lakeSimulation.csv'],
+    selectedFileNames: ['OregonTemp.csv', 'co2MaunaLoa.csv', 'BradleyPrecipInches.csv', 'BradleySnow_mm.csv', 'lakeSimulation.csv'],
     selectedFileName: null,
     depVarNames: ['Temperature (C)', 'Temperature (F)', 'CO2', 'Stream flow', 'Precipitation (mm)', 'Precipitation (in)'],
     selectedDepVar: 'Temperature (C)',
@@ -387,7 +391,8 @@ export default {
       if (this.selectedFileName === 'OregonTemp.csv' ||
           this.selectedFileName === 'co2MaunaLoa.csv' ||
           this.selectedFileName === 'BradleyPrecipInches.csv' ||
-          this.selectedFileName === 'lakeSimulation.csv') {
+          this.selectedFileName === 'lakeSimulation.csv' ||
+          this.selectedFileName === 'BradleySnow_mm.csv') {
         parseDate = d3.timeParse('%-m/%-d/%Y')
       } else if (this.selectedFileName === 'mitchellFromSHEDS.csv') {
         parseDate = d3.timeParse('%-m/%-d/%Y %H:%M')
