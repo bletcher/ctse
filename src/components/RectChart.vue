@@ -30,7 +30,7 @@ export default {
     numChunks: null,
     svg: null,
     widthMax: 960,
-    heightMax: 20,
+    heightMax: 40,
     margin: {
       top: 0,
       right: 50,

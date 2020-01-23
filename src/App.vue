@@ -152,7 +152,7 @@
             >
             </rect-chart>
             <v-spacer></v-spacer>
-            <v-row align="bottom" justify="center" class="ml-2"
+            <v-row align="end" justify="center" class="pa-2"
             >
               <v-col cols="2" sm="2" md="2">
                 <v-menu
@@ -166,6 +166,7 @@
                     <v-text-field
                       v-model="startDate"
                       label="Start date"
+                      hide-details="auto"
                       v-on="on"
                     ></v-text-field>
                   </template>
@@ -188,6 +189,7 @@
                     <v-text-field
                       v-model="endDate"
                       label="End date"
+                      hide-details="auto"
                       v-on="on"
                     ></v-text-field>
                   </template>

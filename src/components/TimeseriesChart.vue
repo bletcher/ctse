@@ -261,18 +261,6 @@ export default {
         .x(d => scales.x(d.date2))
         .y(d => scales.yCFD(d.cumulValue))
     },
-    moved (d) {
-      let xPos = this.scales.x.invert(d3.event.offsetX - this.margin.left)
-      let i0 = d3.bisectLeft(d.map(dd => dd.date2), xPos, 1) - 1
-
-      let parseDateY = d3.timeFormat('%Y')
-      // let minYear = parseDateY(d3.min(d.map(dd => dd.date)))
-      let medianYear = parseDateY(d3.median(d.map(dd => dd.date)))
-
-      this.chartElements.dot.attr('transform', `translate(${this.scales.x(d[i0].date2)},${this.scales.yCFD(d[i0].cumulValue)})`)
-      this.chartElements.dot.node().parentNode.appendChild(this.chartElements.dot.node()) // move to front
-      this.chartElements.dot.select('text').text(medianYear) // .text(minYear)
-    },
     updateTimeseriesChart () {
       console.log('updateTimeseriesChart:start')
       this.scales.x.domain(this.extent)
@@ -452,11 +440,26 @@ export default {
         .attr('stroke-linejoin', 'round')
         .attr('stroke-linecap', 'round')
         .attr('d', this.lineChunks(this.scales))
-        .on('mousemove', this.moved)
+        .on('mousemove', this.plotDot)
         .on('mouseenter', this.enteredChunkLine)
         .on('mouseleave', this.leftChunkLine)
 
       lines.exit().remove()
+    },
+    plotDot (d) {
+      // console.log('plotDot: start')
+      let xPos = this.scales.x.invert(d3.event.offsetX - this.margin.left)
+      let i0 = d3.bisectLeft(d.map(dd => dd.date2), xPos, 1) - 1
+
+      let parseDateY = d3.timeFormat('%Y')
+      // let minYear = parseDateY(d3.min(d.map(dd => dd.date)))
+      let medianYear = parseDateY(d3.median(d.map(dd => dd.date)))
+
+      this.chartElements.dot.attr('display', null)
+      this.chartElements.dot.attr('transform', `translate(${this.scales.x(d[i0].date2)},${this.scales.yCFD(d[i0].cumulValue)})`)
+      this.chartElements.dot.node().parentNode.appendChild(this.chartElements.dot.node()) // move to front
+      this.chartElements.dot.select('text').text(medianYear) // .text(minYear)
+      // console.log('plotDot: end', medianYear, i0)
     },
     enteredChunkLine (d, i, n) {
       // console.log('enteredChunkLine: start', n[i])
@@ -466,7 +469,7 @@ export default {
         .attr('stroke-width', 5)
         .attr('stroke-opacity', 1)
 
-      this.chartElements.dot.attr('display', null)
+      this.plotDot(d)
 
       let rectFiltered = this.getRectFromPath(n[i])
       d3.select(rectFiltered)
@@ -474,6 +477,7 @@ export default {
       // console.log('enteredChunkLine: end', n[i])
     },
     leftChunkLine (d, i, n) {
+      // console.log('leftChunkLine: start')
       d3.select(n[i])
         .attr('stroke-width', 2.5)
         .attr('stroke-opacity', 0.6)
