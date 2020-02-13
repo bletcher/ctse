@@ -336,9 +336,14 @@ export default {
       let data = this.filledData.slice() // probably don't need
 
       if (chunkBefore) {
-        let chunkStartDayOffset = -365 * numYearsPerBrush * 1
+        let chunkStartDayOffset = -365 * numYearsPerBrush * 1 // this is missing leap year days. screws up chunks with montly data
+        // let chunkStartDayOffset = d3.timeDay.count(brushStartDay, d3.timeYear(brushStartDay, -numYearsPerBrush))
         let chunkStartDay = d3.timeDay.offset(brushStartDay, chunkStartDayOffset)
         let chunkEndDay = d3.timeDay.offset(chunkStartDay, numDaysBrush)
+// let chunkStartDayOffset = d3.timeDay.count()
+console.log('timeYears', brushStartDay, d3.timeYear(brushStartDay, -numYearsPerBrush), chunkStartDayOffset, d3.timeYear.offset(brushStartDay, -1), d3.timeYear.offset(brushStartDay, -2))
+console.log('timeYears2', d3.timeYear(), chunkStartDay, chunkEndDay, d3.timeYears(chunkStartDay, chunkEndDay), chunkStartDayOffset, d3.timeDay.count(chunkStartDay, chunkEndDay), 
+d3.timeDay.count(chunkStartDay, brushStartDay))
 
         while (chunkStartDay > this.scales.xBrush.domain()[0]) {
           this.chunkDaysForRect.push({

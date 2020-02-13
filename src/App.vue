@@ -30,9 +30,41 @@
             :items="selectedFileNames"
             v-model="selectedFileName"
             prepend-icon="mdi-file-upload-outline"
-            class="pa-4 pt-6"
+            class="pa-4 pt-6 pb-0"
           >
           </v-select>
+
+          <v-dialog
+            v-model="dialogs.dataSources"
+            scrollable
+            width="600">
+            <template v-slot:activator="{ on }">
+              <v-btn v-on="on" x-small top rounded :style="{left: '50%', transform:'translateX(-50%)'}">
+                <v-icon size="16">mdi-comment-question-outline</v-icon> Data sources
+              </v-btn>
+            </template>
+
+            <v-card>
+              <v-toolbar dense color="grey lighten-2">
+                <strong>Data sources</strong>
+                <v-spacer></v-spacer>
+                <v-btn height="24" width="24" icon @click="dialogs.dataSources = false" class="grey darken-1 elevation-2 mr-0" dark>
+                  <v-icon small>mdi-close</v-icon>
+                </v-btn>
+              </v-toolbar>
+
+              <v-card-text class="mt-2">
+                <p><b>oregonTemp</b>: Daily air temperature from Malheur Branch experiment station (OR) <a href="https://www.ncdc.noaa.gov/cdo-web/datasets/GHCND/stations/GHCND:USC00355160/detail" target="_blank">NOAA</a></p>
+                <p><b>co2MaunaLoa</b>: Monthly CO2 concentration at Mauna Loa <a href="https://www.esrl.noaa.gov/gmd/ccgg/trends/data.html" target="_blank">NOAA</a></p>
+                <p><b>BradleyPrecipInches</b>: Daily precipitation at Bradley airport (CT) <a href="https://www.ncdc.noaa.gov/cdo-web/datasets/GHCND/stations/GHCND:USW00014740/detail" target="_blank">NOAA</a></p>
+                <p><b>BradleySnow_mm</b>: Daily snowfall at Bradley airport (CT) <a href="https://www.ncdc.noaa.gov/cdo-web/datasets/GHCND/stations/GHCND:USW00014740/detail" target="_blank">NOAA</a></p>
+                <p><b>lakeSimulation</b>: Daily lake temperature from a simulation, pers. comm. Jordan Read, USGS</p>
+                <p><b>globalTempAnnual</b>: Annual global temperature from PAGES2K consortium <a href="https://figshare.com/articles/Reconstruction_ensemble_median_and_95_range/8143094" target="_blank">NOAA</a></p>
+                <p><b>globalTempMonthly</b>: Montlhy global temperature from NOAA <a href="https://data.giss.nasa.gov/gistemp/" target="_blank">NOAA</a></p>
+              </v-card-text>
+            </v-card>
+          </v-dialog>
+
           <v-divider
             dark
             class="my-3 white"
@@ -42,7 +74,7 @@
             small-chips
             accept=".csv"
             v-model="inputFileName"
-            class="pa-4 pt-6 pb-1"
+            class="pa-4 pt-6 pb-0"
           >
           </v-file-input>
 
@@ -101,7 +133,7 @@
         v-if="filledData"
       >
         <v-card
-          width="960"
+          width="960px"
           class="ma-3"
         >
           <v-tabs
@@ -154,7 +186,7 @@
             <v-spacer></v-spacer>
             <v-row align="end" justify="center" class="pa-2"
             >
-              <v-col cols="2" sm="2" md="2">
+              <v-col cols="2" sm="2" md="2" class="mr-1 grey lighten-4">
                 <v-menu
                   v-model="startDateMenu"
                   :close-on-content-click="false"
@@ -177,7 +209,7 @@
                 </v-menu>
               </v-col>
 
-              <v-col cols="2" sm="2" md="2">
+              <v-col cols="2" sm="2" md="2" class="ml-1 grey lighten-4">
                 <v-menu
                   v-model="endDateMenu"
                   :close-on-content-click="false"
@@ -240,7 +272,7 @@ export default {
     movingMeanWindow: 10,
     inputFileName: null,
     fileReaderIn: null,
-    selectedFileNames: ['OregonTemp.csv', 'co2MaunaLoa.csv', 'BradleyPrecipInches.csv', 'BradleySnow_mm.csv', 'lakeSimulation.csv'],
+    selectedFileNames: ['OregonTemp.csv', 'co2MaunaLoa.csv', 'BradleyPrecipInches.csv', 'BradleySnow_mm.csv', 'lakeSimulation.csv', 'globalTempAnnual.csv', 'globalTempMonthly.csv'],
     selectedFileName: null,
     depVarNames: ['Temperature (C)', 'Temperature (F)', 'CO2', 'Stream flow', 'Precipitation (mm)', 'Precipitation (in)'],
     selectedDepVar: 'Temperature (C)',
@@ -286,11 +318,12 @@ export default {
       let startIndex = 0
       let rawDataFullRange = []
 
-      // get date range for all data. Will fill in missing observations
+      // get date range for all data. Will fill in any missing observations
       if (this.selectedTimeStep === 'Daily') {
         rawDataFullRange = d3.timeDay.range(d3.min(this.rawData, d => d.date), d3.max(this.rawData, d => d.date))
       } else if (this.selectedTimeStep === 'Monthly') {
         rawDataFullRange = d3.timeMonth.range(d3.min(this.rawData, d => d.date), d3.max(this.rawData, d => d.date))
+        console.log(d3.min(this.rawData, d => d.date), rawDataFullRange)
       } else if (this.selectedTimeStep === 'Yearly') {
         rawDataFullRange = d3.timeYear.range(d3.min(this.rawData, d => d.date), d3.max(this.rawData, d => d.date))
       } else {
@@ -390,14 +423,17 @@ export default {
       console.log('getData:start')
       // for now
       let parseDate = null
-      if (this.selectedFileName === 'OregonTemp.csv' ||
+      /*      if (this.selectedFileName === 'OregonTemp.csv' ||
           this.selectedFileName === 'co2MaunaLoa.csv' ||
           this.selectedFileName === 'BradleyPrecipInches.csv' ||
           this.selectedFileName === 'lakeSimulation.csv' ||
-          this.selectedFileName === 'BradleySnow_mm.csv') {
-        parseDate = d3.timeParse('%-m/%-d/%Y')
-      } else if (this.selectedFileName === 'mitchellFromSHEDS.csv') {
+          this.selectedFileName === 'BradleySnow_mm.csv' ||
+          this.selectedFileName === 'PAGES2k_globalTemp.csv') {
+      */
+      if (this.selectedFileName === 'mitchellFromSHEDS.csv') {
         parseDate = d3.timeParse('%-m/%-d/%Y %H:%M')
+      } else {
+        parseDate = d3.timeParse('%-m/%-d/%Y')
       }
 
       return d3.csv('data/' + this.selectedFileName, d => {
