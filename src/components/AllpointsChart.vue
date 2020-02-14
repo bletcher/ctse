@@ -35,6 +35,14 @@ export default {
       right: 50,
       bottom: 20,
       left: 40
+    },
+    chartElements: {
+      circles: null,
+      toolTip: null
+    },
+    scales: {
+      x: null,
+      y: null
     }
   }),
   mounted () {
@@ -76,22 +84,22 @@ export default {
         .attr('class', 'allpoints')
         .attr('transform', 'translate(' + this.margin.left + ',' + this.margin.top + ')')
 
-      let y = d3.scaleLinear()
+      this.scales.y = d3.scaleLinear()
         .range([this.height, 0])
         .domain(d3.extent(this.dataByDay, d => d.value)).nice()
-      let x = d3.scaleLinear()
+      this.scales.x = d3.scaleLinear()
         .range([0, this.width])
         .domain(d3.extent(this.dataByDay, d => d.dayOfYear))
 
       let axisX = g => g
-        .call(d3.axisBottom(x))
+        .call(d3.axisBottom(this.scales.x))
         .call(g => g.select('.tick:last-of-type text').clone()
           .attr('x', 20)
           .attr('text-anchor', 'start')
           .text('Day of year'))
 
       let axisY = g => g
-        .call(d3.axisLeft(y))
+        .call(d3.axisLeft(this.scales.y))
         .attr('transform', `translate(${this.margin.left}, ${this.margin.bottom})`)
         .call(g => g.select('.tick:last-of-type text').clone()
           .attr('x', 6)
@@ -107,23 +115,43 @@ export default {
         .attr('class', 'axis axis--yAll')
         .call(axisY)
 
-      let circles = d3.select('.allpoints').selectAll('circle')
+      this.chartElements.toolTip = svgAllPoints.append('g')
+        .attr('class', 'toolTip')
+        .attr('display', 'none')
+
+      this.chartElements.toolTip.append('text')
+        .style('font', '12px sans-serif')
+        .attr('text-anchor', 'middle')
+        //.attr('x', -1)
+        //.attr('y', -1)
+        .insert('rect', 'text')
+        .attr('width', 19)
+        .attr('height', 20)
+        .style('fill', 'yellow')
+
+      this.chartElements.circles = d3.select('.allpoints').selectAll('circle')
         .data(this.dataByDay)
         .enter()
         .append('circle')
 
-      circles
-        .attr('cx', d => x(d.dayOfYear))
-        .attr('cy', d => y(d.value))
+      this.chartElements.circles
+        .attr('cx', d => this.scales.x(d.dayOfYear))
+        .attr('cy', d => this.scales.y(d.value))
         .attr('r', 1)
         .attr('stroke', function (d) {
           let scaledYear = (d.year - minYear) / (maxYear - minYear)
           return d3.interpolateViridis(scaledYear)
         })
+        .attr('fill', function (d) {
+          let scaledYear = (d.year - minYear) / (maxYear - minYear)
+          return d3.interpolateViridis(scaledYear)
+        })
+        .on('mouseenter', this.mouseEnter)
+        .on('mouseleave', this.mouseLeave)
 
       let line = d3.line()
-        .x(d => +x(d.key))
-        .y(d => y(d.movingMean))
+        .x(d => +this.scales.x(d.key))
+        .y(d => this.scales.y(d.movingMean))
         .curve(d3.curveCatmullRom.alpha(1.0))
 
       if (this.dataByDayOfYear.length > 360) { // If have daily data (not passing selectedTimeStep for now)
@@ -183,6 +211,30 @@ export default {
         .attr('y', '25px')
         .attr('font-size', '10')
         .text(maxYear)
+    },
+    mouseEnter (d, i, n) {
+      // console.log(n[i])
+      d3.select(n[i])
+        .attr('r', 3)
+
+      let xPos = null
+      if (this.scales.x(d.dayOfYear) > this.width / 4) {
+        xPos = this.scales.x(d.dayOfYear)
+      } else {
+        xPos = this.scales.x(d.dayOfYear) + this.width * 0.11
+      }
+      this.chartElements.toolTip.attr('display', null)
+      this.chartElements.toolTip.attr('transform', `translate(${xPos},${this.scales.y(d.value)})`)
+      this.chartElements.toolTip.node().parentNode.appendChild(this.chartElements.toolTip.node()) // move to front
+
+      this.chartElements.toolTip.select('text').text(d.key)
+    },
+    mouseLeave (d, i, n) {
+      // console.log(n[i])
+      this.chartElements.toolTip.attr('display', 'none')
+
+      d3.select(n[i])
+        .attr('r', 1)
     }
   }
 }

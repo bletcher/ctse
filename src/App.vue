@@ -37,10 +37,10 @@
           <v-dialog
             v-model="dialogs.dataSources"
             scrollable
-            width="600">
+            width="660">
             <template v-slot:activator="{ on }">
               <v-btn v-on="on" x-small top rounded :style="{left: '50%', transform:'translateX(-50%)'}">
-                <v-icon size="16">mdi-comment-question-outline</v-icon> Data sources
+                <v-icon size="16">mdi-information-outline</v-icon> Data sources
               </v-btn>
             </template>
 
@@ -67,8 +67,9 @@
 
           <v-divider
             dark
-            class="my-3 white"
+            class="my-3 darkgrey"
           ></v-divider>
+
           <v-file-input
             label="Upload a CSV file"
             small-chips
@@ -84,7 +85,7 @@
             width="600">
             <template v-slot:activator="{ on }">
               <v-btn v-on="on" x-small top rounded :style="{left: '50%', transform:'translateX(-50%)'}">
-                <v-icon size="16">mdi-alert-circle-outline</v-icon> File format
+                <v-icon size="16">mdi-information-outline</v-icon> File format
               </v-btn>
             </template>
 
