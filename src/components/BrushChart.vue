@@ -108,6 +108,11 @@ export default {
         .attr('class', 'brush')
         .call(this.brush)
         .call(this.brush.move, this.scales.x.range())
+
+      this.svgElements.context.append('g')
+        .attr('class', 'rectWindow')
+        .append('rect')
+        .attr('display', 'none')
     },
     updateBrushChart () {
       this.svgElements.context.select('.brush')

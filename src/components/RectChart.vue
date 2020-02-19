@@ -166,6 +166,17 @@ export default {
         .attr('r', 6)
 
       pathFiltered.parentNode.appendChild(pathFiltered) // move to front
+
+      let rW = d3.select('.rectWindow')
+      rW.select('rect')
+        .attr('display', 'null')
+        .attr('x', d.start)
+        .attr('y', '0')
+        .attr('width', d.width)
+        .attr('height', '69')
+        .attr('stroke', 'steelblue')
+        .attr('fill', 'steelblue')
+        .attr('fill-opacity', '0.3')
     },
     leftRect (d, i, n) {
       d3.select(n[i])
@@ -179,6 +190,11 @@ export default {
       let dotFiltered = this.getDotFromRect(n[i])
       d3.select(dotFiltered)
         .attr('r', 3)
+
+      let rW = d3.select('.rectWindow')
+
+      rW.select('rect')
+        .attr('display', 'none')  
     },
     getPathFromRect (rect) {
       let paths = d3.select('.lineChunks').selectAll('path').nodes()
