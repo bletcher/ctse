@@ -122,12 +122,6 @@ export default {
       this.chartElements.toolTip.append('text')
         .style('font', '12px sans-serif')
         .attr('text-anchor', 'middle')
-        //.attr('x', -1)
-        //.attr('y', -1)
-        .insert('rect', 'text')
-        .attr('width', 19)
-        .attr('height', 20)
-        .style('fill', 'yellow')
 
       this.chartElements.circles = d3.select('.allpoints').selectAll('circle')
         .data(this.dataByDay)
@@ -213,18 +207,26 @@ export default {
         .text(maxYear)
     },
     mouseEnter (d, i, n) {
-      // console.log(n[i])
+      // console.log(n[i], this.scales.y(d.value), this.height / 10)
       d3.select(n[i])
         .attr('r', 3)
 
       let xPos = null
+      let yPos = null
+
       if (this.scales.x(d.dayOfYear) > this.width / 4) {
         xPos = this.scales.x(d.dayOfYear)
       } else {
         xPos = this.scales.x(d.dayOfYear) + this.width * 0.11
       }
+
+      if (this.scales.y(d.value) > this.height / 10) {
+        yPos = this.scales.y(d.value)
+      } else {
+        yPos = this.scales.y(d.value) + this.height * 0.11
+      }
       this.chartElements.toolTip.attr('display', null)
-      this.chartElements.toolTip.attr('transform', `translate(${xPos},${this.scales.y(d.value)})`)
+      this.chartElements.toolTip.attr('transform', `translate(${xPos},${yPos})`)
       this.chartElements.toolTip.node().parentNode.appendChild(this.chartElements.toolTip.node()) // move to front
 
       this.chartElements.toolTip.select('text').text(d.key)

@@ -336,14 +336,9 @@ export default {
       let data = this.filledData.slice() // probably don't need
 
       if (chunkBefore) {
-        let chunkStartDayOffset = -365 * numYearsPerBrush * 1 // this is missing leap year days. screws up chunks with montly data
-        // let chunkStartDayOffset = d3.timeDay.count(brushStartDay, d3.timeYear(brushStartDay, -numYearsPerBrush))
-        let chunkStartDay = d3.timeDay.offset(brushStartDay, chunkStartDayOffset)
+        let chunkStartDay = d3.timeYear.offset(brushStartDay, -numYearsPerBrush)
         let chunkEndDay = d3.timeDay.offset(chunkStartDay, numDaysBrush)
-// let chunkStartDayOffset = d3.timeDay.count()
-console.log('timeYears', brushStartDay, d3.timeYear(brushStartDay, -numYearsPerBrush), chunkStartDayOffset, d3.timeYear.offset(brushStartDay, -1), d3.timeYear.offset(brushStartDay, -2))
-console.log('timeYears2', d3.timeYear(), chunkStartDay, chunkEndDay, d3.timeYears(chunkStartDay, chunkEndDay), chunkStartDayOffset, d3.timeDay.count(chunkStartDay, chunkEndDay), 
-d3.timeDay.count(chunkStartDay, brushStartDay))
+        let chunkStartDayOffset = d3.timeDay.count(chunkStartDay, brushStartDay)
 
         while (chunkStartDay > this.scales.xBrush.domain()[0]) {
           this.chunkDaysForRect.push({
@@ -354,7 +349,7 @@ d3.timeDay.count(chunkStartDay, brushStartDay))
 
           let cumulFilteredDate = this.getCumulFilteredDate(data, chunkStartDay, chunkEndDay, chunkCounterBefore)
           cumulFilteredDate.forEach(function (d, i) {
-            d.date2 = d3.timeDay.offset(d.date, -chunkStartDayOffset)
+            d.date2 = d3.timeDay.offset(d.date, chunkStartDayOffset)
             d.beforeNotAfter = true
           })
 
@@ -367,19 +362,17 @@ d3.timeDay.count(chunkStartDay, brushStartDay))
           }
 
           this.updateCumulAll(cumulFilteredDate)
-
           chunkCounterBefore++
 
-          chunkStartDayOffset = -365 * numYearsPerBrush * chunkCounterBefore
-          chunkStartDay = d3.timeDay.offset(brushStartDay, chunkStartDayOffset)
+          chunkStartDay = d3.timeYear.offset(brushStartDay, -numYearsPerBrush * chunkCounterBefore)
           chunkEndDay = d3.timeDay.offset(chunkStartDay, numDaysBrush)
+          chunkStartDayOffset = d3.timeDay.count(chunkStartDay, brushStartDay)
         }
       }
-
       if (chunkAfter) {
-        let chunkStartDayOffset = 365 * numYearsPerBrush * 1
-        let chunkStartDay = d3.timeDay.offset(brushStartDay, chunkStartDayOffset)
+        let chunkStartDay = d3.timeYear.offset(brushStartDay, numYearsPerBrush)
         let chunkEndDay = d3.timeDay.offset(chunkStartDay, numDaysBrush)
+        let chunkStartDayOffset = d3.timeDay.count(brushStartDay, chunkStartDay)
 
         while (chunkEndDay < this.scales.xBrush.domain()[1]) {
           this.chunkDaysForRect.push({
@@ -406,9 +399,9 @@ d3.timeDay.count(chunkStartDay, brushStartDay))
 
           chunkCounterAfter++
 
-          chunkStartDayOffset = 365 * numYearsPerBrush * chunkCounterAfter
-          chunkStartDay = d3.timeDay.offset(brushStartDay, chunkStartDayOffset)
+          chunkStartDay = d3.timeYear.offset(brushStartDay, numYearsPerBrush * chunkCounterAfter)
           chunkEndDay = d3.timeDay.offset(chunkStartDay, numDaysBrush)
+          chunkStartDayOffset = d3.timeDay.count(brushStartDay, chunkStartDay)
         }
       }
       this.chunkCounters = [ chunkCounterBefore - 1, chunkCounterAfter - 1 ]
