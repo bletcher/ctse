@@ -199,7 +199,7 @@
                     <v-text-field
                       v-model="startDate"
                       label="Start date"
-                      hide-details="auto"
+                      hide-details
                       v-on="on"
                     ></v-text-field>
                   </template>
@@ -222,7 +222,7 @@
                     <v-text-field
                       v-model="endDate"
                       label="End date"
-                      hide-details="auto"
+                      hide-details
                       v-on="on"
                     ></v-text-field>
                   </template>

@@ -63,6 +63,7 @@ export default {
       this.chunkMeansIn = d.chunkMeans
       this.numChunks = d.numChunks
       this.filterMean = d.filterMean
+      this.chunkCounters = d.chunkCounters
     })
   },
   watch: {
@@ -138,8 +139,10 @@ export default {
         .attr('cx', d => this.scales.x(d.minYear))
         .attr('cy', d => this.scales.y(d.valueMean))
         .attr('r', 3)
-        .attr('stroke', 'steelblue') // this.colorChunkDots)
-        .attr('fill', 'steelblue') // this.colorChunkDots)
+        .attr('stroke', this.colorChunkDots)
+        .attr('fill', this.colorChunkDots)
+        .on('mouseenter', this.enteredChunkDot)
+        .on('mouseleave', this.leftChunkDot)
 
       circles.exit().remove()
       // ////////////////////////////////////
@@ -191,15 +194,39 @@ export default {
     dateParseY () {
       return d3.timeFormat('%j')
     },
-    colorChunkDots (d, i) {
-      if (d[0].beforeNotAfter) {
+    colorChunkDots (d, i, n) {
+      if (i === this.numChunks) { // the filtered rect is the last elelment
+        return 'red'
+      } else if (d.beforeNotAfter) {
         let r = d3.range(0, this.chunkCounters[0]) // reverse the order because before chunks are counted from right to left
         return d3.interpolateViridis(r[this.chunkCounters[0] - i - 1] / this.numChunks)
-        // return tmp(r[this.chunkCounters[0] - i - 1] / this.numChunks)
       } else {
         return d3.interpolateViridis(i / this.numChunks)
-        //  return tmp(i / this.numChunks)
       }
+    },
+    enteredChunkDot (d, i, n) {
+      n[i].parentNode.appendChild(n[i]) // move to front
+
+      d3.select(n[i])
+        .attr('r', 6)
+
+      let rectFiltered = this.getRectFromDot(n[i]) // this doesn't work for the filtered mean because the filtered rect is not part of .chunkRects
+      d3.select(rectFiltered)
+        .attr('height', 5)
+    },
+    leftChunkDot (d, i, n) {
+      d3.select(n[i])
+        .attr('r', 3)
+
+      let rectFiltered = this.getRectFromDot(n[i])
+      d3.select(rectFiltered)
+        .attr('height', 2.5)
+    },
+    getRectFromDot (dot) {
+      let rects = d3.select('.chunkRects').selectAll('rect').nodes()
+      let pathStroke = d3.select(dot).attr('fill')
+      let rectsF = rects.filter(function (d) { return d3.select(d).attr('fill') === pathStroke })
+      return rectsF[0]
     }
   }
 }

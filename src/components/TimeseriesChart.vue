@@ -357,7 +357,8 @@ export default {
             this.chunksData.push(cumulFilteredDate)
             this.chunkMeans.push({
               minYear: d3.min(cumulFilteredDate.map(d => d.date)),
-              valueMean: d3.mean(cumulFilteredDate.map(d => d.value))
+              valueMean: d3.mean(cumulFilteredDate.map(d => d.value)),
+              beforeNotAfter: true
             })
           }
 
@@ -391,7 +392,8 @@ export default {
             this.chunksData.push(cumulFilteredDate)
             this.chunkMeans.push({
               minYear: d3.min(cumulFilteredDate.map(d => d.date)),
-              valueMean: d3.mean(cumulFilteredDate.map(d => d.value))
+              valueMean: d3.mean(cumulFilteredDate.map(d => d.value)),
+              beforeNotAfter: false
             })
           }
 

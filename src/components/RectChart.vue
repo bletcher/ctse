@@ -157,10 +157,13 @@ export default {
         .attr('height', 5)
 
       let pathFiltered = this.getPathFromRect(n[i])
-
       d3.select(pathFiltered)
         .attr('stroke-width', 5)
         .attr('stroke-opacity', 1)
+
+      let dotFiltered = this.getDotFromRect(n[i])
+      d3.select(dotFiltered)
+        .attr('r', 6)
 
       pathFiltered.parentNode.appendChild(pathFiltered) // move to front
     },
@@ -169,18 +172,26 @@ export default {
         .attr('height', 2.5)
 
       let pathFiltered = this.getPathFromRect(n[i])
-
       d3.select(pathFiltered)
         .attr('stroke-width', 2.5)
         .attr('stroke-opacity', 0.6)
+
+      let dotFiltered = this.getDotFromRect(n[i])
+      d3.select(dotFiltered)
+        .attr('r', 3)
     },
     getPathFromRect (rect) {
       let paths = d3.select('.lineChunks').selectAll('path').nodes()
       let rectFill = d3.select(rect).attr('fill')
       let pathsF = paths.filter(function (d) { return d3.select(d).attr('stroke') === rectFill })
       return pathsF[0]
+    },
+    getDotFromRect (dot) {
+      let dots = d3.select('.chunkmeans').selectAll('circle').nodes()
+      let dotFill = d3.select(dot).attr('fill')
+      let dotsF = dots.filter(function (d) { return d3.select(d).attr('stroke') === dotFill })
+      return dotsF[0]
     }
-
   }
 }
 </script>
