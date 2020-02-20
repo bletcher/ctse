@@ -166,7 +166,7 @@ export default {
         .attr('x2', d => this.scales.x(d[1][0]))
         .attr('y1', d => this.scales.y(d[0][1]))
         .attr('y2', d => this.scales.y(d[1][1]))
-        .attr('stroke', 'steelblue')
+        .attr('stroke', '#4f5459')
       // //////////////////////////////////////
       this.means.selectAll('.rSq').remove()
       this.means.selectAll('.slope').remove()

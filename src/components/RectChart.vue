@@ -174,9 +174,9 @@ export default {
         .attr('y', '0')
         .attr('width', d.width)
         .attr('height', '69')
-        .attr('stroke', 'steelblue')
-        .attr('fill', 'steelblue')
+        .attr('fill', '#d3dae3')
         .attr('fill-opacity', '0.3')
+        .attr('shape-rendering', 'crispEdges')
     },
     leftRect (d, i, n) {
       d3.select(n[i])
@@ -194,7 +194,7 @@ export default {
       let rW = d3.select('.rectWindow')
 
       rW.select('rect')
-        .attr('display', 'none')  
+        .attr('display', 'none')
     },
     getPathFromRect (rect) {
       let paths = d3.select('.lineChunks').selectAll('path').nodes()

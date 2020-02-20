@@ -105,6 +105,11 @@
             </v-card>
           </v-dialog>
         </v-list>
+
+        <v-divider
+          class="my-2 white"
+        ></v-divider>
+
         <v-list
           class="grey lighten-2"
         >
@@ -113,7 +118,7 @@
             v-model="selectedDepVar"
             label="Edit dependent variable name"
             prepend-icon="mdi-chart-line"
-            class="pa-4 pt-8"
+            class="pa-4 pt-8 pb-0"
           >
           </v-combobox>
           <v-divider
@@ -125,7 +130,7 @@
             v-model="selectedTimeStep"
             label="Time step"
             prepend-icon="mdi-timer"
-            class="pa-4 pt-8"
+            class="pa-4 pt-8 pb-0"
           >
           </v-select>
         </v-list>
@@ -134,8 +139,9 @@
         v-if="filledData"
       >
         <v-card
-          width="960px"
-          class="ma-3"
+          min-width="960px"
+          max-width="960px"
+          class="ma-6"
         >
           <v-tabs
             v-model="tab" background-color="#edebf2"
