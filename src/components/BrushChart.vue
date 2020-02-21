@@ -50,7 +50,6 @@ export default {
   },
   watch: {
     'filledData' () {
-      // console.log('BrushChart:watch.filledData')
       this.initializeBrushChart()
     },
     'extent' () {

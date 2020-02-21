@@ -14,7 +14,6 @@
 <script>
 import * as d3 from 'd3'
 import { regressionLinear } from 'd3-regression'
-import { eventBus } from '../main'
 
 export default {
   name: 'MeansChart',
@@ -28,13 +27,30 @@ export default {
       type: String,
       required: false,
       defaults: () => ''
+    },
+    chunkMeans: {
+      type: Array,
+      required: false,
+      defaults: () => []
+    },
+    numChunks: {
+      type: Number,
+      required: false,
+      defaults: () => null
+    },
+    filterMean: {
+      type: Object,
+      required: false,
+      defaults: () => {}
+    },
+    chunkCounters: {
+      type: Array,
+      required: false,
+      defaults: () => []
     }
   },
   data: () => ({
-    chunkMeansIn: [],
-    chunkMeans: [],
     filterMean: null,
-    numChunks: null,
     svgMeans: null,
     means: null,
     widthMax: 960,
@@ -59,12 +75,6 @@ export default {
   },
   created () {
     console.log('created:meansChart')
-    eventBus.$on('updatedChunks', (d) => {
-      this.chunkMeansIn = d.chunkMeans
-      this.numChunks = d.numChunks
-      this.filterMean = d.filterMean
-      this.chunkCounters = d.chunkCounters
-    })
   },
   watch: {
     'extent' () {
@@ -125,7 +135,6 @@ export default {
     },
     updateMeansChart () {
       console.log('updateMeansChart:start')
-      this.chunkMeans = this.chunkMeansIn.slice()
       this.chunkMeans.push(this.filterMean)
 
       this.scales.x.domain(d3.extent(this.chunkMeans, d => d.minYear))

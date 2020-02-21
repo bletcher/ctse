@@ -156,6 +156,10 @@
               <means-chart
                 :extent="brushExtent"
                 :selectedDepVar="selectedDepVar"
+                :chunkMeans="chunkMeans"
+                :numChunks="numChunks"
+                :filterMean="filterMean"
+                :chunkCounters="chunkCounters"
               >
               </means-chart>
             </v-tab-item>
@@ -164,6 +168,16 @@
                 :filledData="filledData"
                 :extent="brushExtent"
                 :selectedDepVar="selectedDepVar"
+                :dataFilledCFD="dataFilledCFD"
+                :filledDataExtentDate="filledDataExtentDate"
+                :filledDataExtentValue="filledDataExtentValue"
+                :brushedData="brushedData"
+                :filterDaysForRect="filterDaysForRect"
+                :numChunks="numChunks"
+                :chunksData="chunksData"
+                :chunkCounters="chunkCounters"
+                :minOfMinCumul="minOfMinCumul"
+                :maxOfMaxCumul="maxOfMaxCumul"
               >
               </timeseries-chart>
             </v-tab-item>
@@ -185,9 +199,14 @@
             >
             </brush-chart>
             <rect-chart
+              class="mt-0 pt-0"
               :filledData="filledData"
               :extent="brushExtent"
-              class="mt-0 pt-0"
+              :filterDaysForRect="filterDaysForRect"
+              :numChunks="numChunks"
+              :chunksData="chunksData"
+              :chunkDaysForRect="chunkDaysForRect"
+              :chunkCounters="chunkCounters"
             >
             </rect-chart>
             <v-spacer></v-spacer>
@@ -262,6 +281,7 @@ const formatters = {
   parseDatePicked: d3.timeParse('%Y-%m-%d'),
   ymd: d3.timeFormat('%Y-%m-%d')
 }
+const oneDay = 24 * 60 * 60 * 1000
 
 export default {
   name: 'App',
@@ -274,6 +294,13 @@ export default {
     RectChart
   },
   data: () => ({
+    timeSeriesWidth: 960,
+    timeSeriesMargin: {
+      top: 20,
+      right: 50,
+      bottom: 20,
+      left: 40
+    },
     rawData: [],
     brushExtent: null,
     movingMeanWindow: 10,
@@ -294,7 +321,18 @@ export default {
     drawer: true,
     dialogs: {
       about: false
-    }
+    },
+    minCumulAll: [],
+    minOfMinCumul: null,
+    maxCumulAll: [],
+    maxOfMaxCumul: null,
+    filterDaysForRect: [],
+    numChunks: null,
+    chunksData: [],
+    chunkDaysForRect: [],
+    chunkMeans: [],
+    chunkCounters: null,
+    filterMean: {}
   }),
   mounted () {
   },
@@ -314,6 +352,13 @@ export default {
       this.brushExtent = d3.extent(this.filledData, d => d.date)
       this.startDate = formatters.ymd(this.brushExtent[0])
       this.endDate = formatters.ymd(this.brushExtent[1])
+    },
+    brushExtent () {
+      this.emptyCumulAll()
+      this.updateCumulAll(this.brushedData)
+
+      this.updateFilterChunk() // change name of this to updateDaysForRect
+      this.updateChunks()
     }
   },
   computed: {
@@ -402,6 +447,24 @@ export default {
         }
       }
       return meanByDayOfYear
+    },
+    dataFilledCFD () {
+      return this.getCumulFilteredDate(this.filledData, this.filledDataExtentDate[0], this.filledDataExtentDate[1])
+    },
+    filledDataExtentDate () {
+      return d3.extent(this.filledData, d => d.date)
+    },
+    filledDataExtentValue () {
+      return d3.extent(this.filledData, d => d.value)
+    },
+    brushedData () {
+      return this.getCumulFilteredDate(this.filledData, this.brushExtent[0], this.brushExtent[1])
+    },
+    scalesxBrush () {
+      return d3.scaleTime().range([0, this.timeSeriesChartWidth]).domain(this.filledDataExtentDate)
+    },
+    timeSeriesChartWidth () {
+      return this.timeSeriesWidth - this.timeSeriesMargin.left - this.timeSeriesMargin.right
     }
   },
   methods: {
@@ -413,7 +476,7 @@ export default {
     updateBrushExtentFromStartDate () {
       if (formatters.parseDatePicked(this.startDate) > this.brushExtent[1]) {
         alert('Start date must be before end date')
-        this.startDate = formatters.ymd(this.extent[0])
+        this.startDate = formatters.ymd(this.brushExtent[0])
         return
       }
       this.brushExtent = [formatters.parseDatePicked(this.startDate), this.brushExtent[1]]
@@ -421,22 +484,15 @@ export default {
     updateBrushExtentFromEndDate () {
       if (this.brushExtent[0] > formatters.parseDatePicked(this.endDate)) {
         alert('End date must be after start date')
-        this.startDate = formatters.ymd(this.extent[1])
+        this.startDate = formatters.ymd(this.brushExtent[1])
         return
       }
       this.brushExtent = [this.brushExtent[0], formatters.parseDatePicked(this.endDate)]
     },
     getData () {
       console.log('getData:start')
-      // for now
+
       let parseDate = null
-      /*      if (this.selectedFileName === 'OregonTemp.csv' ||
-          this.selectedFileName === 'co2MaunaLoa.csv' ||
-          this.selectedFileName === 'BradleyPrecipInches.csv' ||
-          this.selectedFileName === 'lakeSimulation.csv' ||
-          this.selectedFileName === 'BradleySnow_mm.csv' ||
-          this.selectedFileName === 'PAGES2k_globalTemp.csv') {
-      */
       if (this.selectedFileName === 'mitchellFromSHEDS.csv') {
         parseDate = d3.timeParse('%-m/%-d/%Y %H:%M')
       } else {
@@ -446,7 +502,6 @@ export default {
       return d3.csv('data/' + this.selectedFileName, d => {
         d.date = parseDate(d.date)
         d.day = formatters.mdy(d.date)
-        // d.dayOfYear = +formatters.julian(d.date)
         d.value = +d.value
         return d
       })
@@ -475,7 +530,7 @@ export default {
           } else {
             parseDate = d3.timeParse('%-m/%-d/%Y %H:%M')
           }
-          // console.log(csvFormatted)
+
           for (let i = 0; i < csvFormatted.length; i++) {
             csvFormatted[i].date = parseDate(csvFormatted[i].date)
             csvFormatted[i].day = formatters.mdy(csvFormatted[i].date)
@@ -523,6 +578,166 @@ export default {
       } else {
         this.selectedTimeStep = 'Yearly'
       }
+    },
+    // chunk functions
+    getOtherChunks (numDaysBrush) {
+      console.log('App:getOtherChunks')
+      this.chunkDaysForRect = []
+      let chunkBefore = false
+      let chunkAfter = false
+      let numDaysBeforeBrush = Math.round(Math.abs(this.brushExtent[0] - this.scalesxBrush.domain()[0]) / oneDay)
+      let numDaysAfterBrush = Math.round(Math.abs(this.scalesxBrush.domain()[1] - this.brushExtent[1]) / oneDay)
+
+      if (numDaysBrush < numDaysBeforeBrush) { chunkBefore = true }
+      if (numDaysBrush < numDaysAfterBrush) { chunkAfter = true }
+
+      let numYearsPerBrush = (Math.floor(numDaysBrush / 365) < 1) ? 1 : Math.floor(numDaysBrush / 365)
+      let brushStartDay = this.brushExtent[0]
+
+      let chunkCounterBefore = 1
+      let chunkCounterAfter = 1
+      this.chunksData = []
+      this.chunkMeans = []
+
+      let data = this.filledData.slice() // probably don't need
+
+      if (chunkBefore) {
+        let chunkStartDay = d3.timeYear.offset(brushStartDay, -numYearsPerBrush)
+        let chunkEndDay = d3.timeDay.offset(chunkStartDay, numDaysBrush)
+        let chunkStartDayOffset = d3.timeDay.count(chunkStartDay, brushStartDay)
+
+        while (chunkStartDay > this.scalesxBrush.domain()[0]) {
+          this.chunkDaysForRect.push({
+            start: this.scalesxBrush(chunkStartDay),
+            width: this.scalesxBrush(chunkEndDay) - this.scalesxBrush(chunkStartDay),
+            beforeNotAfter: true
+          })
+
+          let cumulFilteredDate = this.getCumulFilteredDate(data, chunkStartDay, chunkEndDay, chunkCounterBefore)
+          cumulFilteredDate.forEach(function (d, i) {
+            d.date2 = d3.timeDay.offset(d.date, chunkStartDayOffset)
+            d.beforeNotAfter = true
+          })
+
+          if (cumulFilteredDate.length > 0) {
+            this.chunksData.push(cumulFilteredDate)
+            this.chunkMeans.push({
+              minYear: d3.min(cumulFilteredDate.map(d => d.date)),
+              valueMean: d3.mean(cumulFilteredDate.map(d => d.value)),
+              beforeNotAfter: true
+            })
+          }
+
+          this.updateCumulAll(cumulFilteredDate)
+          chunkCounterBefore++
+
+          chunkStartDay = d3.timeYear.offset(brushStartDay, -numYearsPerBrush * chunkCounterBefore)
+          chunkEndDay = d3.timeDay.offset(chunkStartDay, numDaysBrush)
+          chunkStartDayOffset = d3.timeDay.count(chunkStartDay, brushStartDay)
+        }
+      }
+      if (chunkAfter) {
+        let chunkStartDay = d3.timeYear.offset(brushStartDay, numYearsPerBrush)
+        let chunkEndDay = d3.timeDay.offset(chunkStartDay, numDaysBrush)
+        let chunkStartDayOffset = d3.timeDay.count(brushStartDay, chunkStartDay)
+
+        while (chunkEndDay < this.scalesxBrush.domain()[1]) {
+          this.chunkDaysForRect.push({
+            start: this.scalesxBrush(chunkStartDay),
+            width: this.scalesxBrush(chunkEndDay) - this.scalesxBrush(chunkStartDay),
+            beforeNotAfter: false
+          })
+
+          let cumulFilteredDate = this.getCumulFilteredDate(data, chunkStartDay, chunkEndDay, chunkCounterAfter)
+          cumulFilteredDate.forEach(function (d, i) {
+            d.date2 = d3.timeDay.offset(d.date, -chunkStartDayOffset)
+            d.beforeNotAfter = false
+          })
+
+          if (cumulFilteredDate.length > 0) {
+            this.chunksData.push(cumulFilteredDate)
+            this.chunkMeans.push({
+              minYear: d3.min(cumulFilteredDate.map(d => d.date)),
+              valueMean: d3.mean(cumulFilteredDate.map(d => d.value)),
+              beforeNotAfter: false
+            })
+          }
+
+          this.updateCumulAll(cumulFilteredDate)
+
+          chunkCounterAfter++
+
+          chunkStartDay = d3.timeYear.offset(brushStartDay, numYearsPerBrush * chunkCounterAfter)
+          chunkEndDay = d3.timeDay.offset(chunkStartDay, numDaysBrush)
+          chunkStartDayOffset = d3.timeDay.count(brushStartDay, chunkStartDay)
+        }
+      }
+      this.chunkCounters = [ chunkCounterBefore - 1, chunkCounterAfter - 1 ]
+    },
+    updateChunks () {
+      console.log('App:updateChunks', this.brushExtent[0])//, this.scalesxBrush.domain()[0])
+      let numDaysBrush = Math.round(Math.abs((this.brushExtent[1] - this.brushExtent[0]) / oneDay))
+      let numDaysBeginningToBrush = Math.round(Math.abs((this.brushExtent[0] - this.scalesxBrush.domain()[0]) / oneDay))
+      let numDaysBrushToEnd = Math.round(Math.abs((this.scalesxBrush.domain()[1] - this.brushExtent[1]) / oneDay))
+
+      this.numChunks = 0
+
+      if (numDaysBeginningToBrush > numDaysBrush || numDaysBrushToEnd > numDaysBrush) { // chunks before or after the brush
+        this.getOtherChunks(numDaysBrush)
+
+        this.maxOfMaxCumul = d3.max(this.maxCumulAll)
+        this.minOfMinCumul = d3.min(this.minCumulAll)
+        this.numChunks = this.chunkDaysForRect.length
+      } else {
+        this.maxOfMaxCumul = d3.max(this.maxCumulAll)
+        this.minOfMinCumul = d3.min(this.minCumulAll)
+        this.chunksData = []
+        this.chunkDaysForRect = []
+      }
+    },
+    updateFilterChunk () {
+      console.log('App:updateFilterChunk:start')
+      this.filterDaysForRect = []
+      this.filterDaysForRect.push({
+        start: this.scalesxBrush(this.brushExtent[0]),
+        width: this.scalesxBrush(this.brushExtent[1]) - this.scalesxBrush(this.brushExtent[0])
+      })
+
+      this.filterMean = { minYear: this.brushExtent[0], valueMean: d3.mean(this.brushedData.map(d => d.value)) }
+      console.log('App:updateFilterChunk:end', this.filterDaysForRect)
+    },
+    updateCumulAll (d) {
+      console.log('App:updateCumulAll')
+      this.maxCumulAll.push(this.getMaxCumul(d))
+      this.minCumulAll.push(this.getMinCumul(d))
+    },
+    emptyCumulAll () {
+      console.log('App:emptyCumulAll')
+      this.maxCumulAll = []
+      this.minCumulAll = []
+    },
+    getMaxCumul (dat) {
+      return d3.max(dat, d => d.cumulValue)
+    },
+    getMinCumul (dat) {
+      return d3.min(dat, d => d.cumulValue)
+    },
+    getCumulFilteredDate (dataIn, minDate, maxDate, chunkCounter) {
+      let data = dataIn.slice() // make a copy
+      let fDate = data.filter(d => d.date >= minDate && d.date <= maxDate)
+      let values = fDate.map(d => d.value)
+      let cumulValueArray = this.cumulSum(values)
+      let fDateCumul = fDate.map((e, i) => ({ cumulValue: cumulValueArray[i], ...e }))
+
+      return fDateCumul
+    },
+    cumulSum (a) {
+      let result = [a[0]]
+
+      for (let i = 1; i < a.length; i++) {
+        result[i] = result[i - 1] + a[i]
+      }
+      return result
     }
   }
 }

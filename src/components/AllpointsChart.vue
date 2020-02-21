@@ -50,7 +50,6 @@ export default {
   },
   watch: {
     'dataByDayOfYear' () {
-      // console.log('AllpointsChart:watch.dataByDayOfYear')
       this.initializeAllPointsChart()
     },
     'selectedDepVar' () {
@@ -207,7 +206,6 @@ export default {
         .text(maxYear)
     },
     mouseEnter (d, i, n) {
-      // console.log(n[i], this.scales.y(d.value), this.height / 10)
       d3.select(n[i])
         .attr('r', 3)
 
@@ -232,7 +230,6 @@ export default {
       this.chartElements.toolTip.select('text').text(d.key)
     },
     mouseLeave (d, i, n) {
-      // console.log(n[i])
       this.chartElements.toolTip.attr('display', 'none')
 
       d3.select(n[i])

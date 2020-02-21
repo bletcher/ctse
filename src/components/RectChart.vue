@@ -6,7 +6,6 @@
 
 <script>
 import * as d3 from 'd3'
-import { eventBus } from '../main'
 
 export default {
   name: 'RectChart',
@@ -20,14 +19,34 @@ export default {
       type: Array,
       required: false,
       defaults: () => []
+    },
+    filterDaysForRect: {
+      type: Array,
+      required: false,
+      defaults: () => []
+    },
+    numChunks: {
+      type: Number,
+      required: false,
+      defaults: () => null
+    },
+    chunksData: {
+      type: Array,
+      required: false,
+      defaults: () => null
+    },
+    chunkDaysForRect: {
+      type: Array,
+      required: false,
+      defaults: () => []
+    },
+    chunkCounters: {
+      type: Array,
+      required: false,
+      defaults: () => []
     }
   },
   data: () => ({
-    chunksData: [],
-    chunkDaysForRect: [],
-    filterDaysForRect: [],
-    chunkCounters: [],
-    numChunks: null,
     svg: null,
     widthMax: 960,
     heightMax: 40,
@@ -39,23 +58,12 @@ export default {
     }
   }),
   created () {
-    eventBus.$on('updatedChunks', (d) => {
-      this.chunksData = d.chunksData
-      this.chunkDaysForRect = d.chunkDaysForRect
-      this.filterDaysForRect = d.filterDaysForRect
-      this.chunkCounters = d.chunkCounters
-      this.numChunks = d.numChunks
-
-      // this.updateFilterRect() // equivalent to watching 'extent'
-      // this.updateChunkRects()
-    })
   },
   mounted () {
     this.initializeRectChart()
   },
   watch: {
     'filledData' () {
-      // console.log('RectChart:watch.filledData')
       this.initializeRectChart()
     },
     'extent' () {
