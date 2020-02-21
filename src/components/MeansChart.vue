@@ -78,7 +78,6 @@ export default {
   },
   watch: {
     'extent' () {
-      console.log('watch:extent:meansChart')
       if (this.numChunks > 1) {
         this.overlayValue = false
         this.initializeMeansChart()
@@ -89,7 +88,6 @@ export default {
       }
     },
     'selectedDepVar' () {
-      console.log('MeansChart:watch:selectedDepVar')
       this.updateMeansChart()
     }
   },
@@ -134,7 +132,6 @@ export default {
         .call(this.axes.y)
     },
     updateMeansChart () {
-      console.log('updateMeansChart:start')
       this.chunkMeans.push(this.filterMean)
 
       this.scales.x.domain(d3.extent(this.chunkMeans, d => d.minYear))

@@ -53,7 +53,6 @@ export default {
       this.initializeBrushChart()
     },
     'extent' () {
-      console.log('BrushChart:watch.extent')
       this.updateBrushChart()
     }
   },

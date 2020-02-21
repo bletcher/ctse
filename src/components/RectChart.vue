@@ -67,7 +67,6 @@ export default {
       this.initializeRectChart()
     },
     'extent' () {
-      console.log('RectChart:watch:extent')
       this.updateFilterRect()
       this.updateChunkRects()
     }

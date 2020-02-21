@@ -348,7 +348,6 @@ export default {
       }
     },
     filledData () {
-      console.log('App:watch:filledData')
       this.brushExtent = d3.extent(this.filledData, d => d.date)
       this.startDate = formatters.ymd(this.brushExtent[0])
       this.endDate = formatters.ymd(this.brushExtent[1])
@@ -364,7 +363,6 @@ export default {
   computed: {
     filledData () {
       if (this.rawData.length === 0) return
-      console.log('filledData:start')
 
       let filled = []
       let startIndex = 0
@@ -375,7 +373,6 @@ export default {
         rawDataFullRange = d3.timeDay.range(d3.min(this.rawData, d => d.date), d3.max(this.rawData, d => d.date))
       } else if (this.selectedTimeStep === 'Monthly') {
         rawDataFullRange = d3.timeMonth.range(d3.min(this.rawData, d => d.date), d3.max(this.rawData, d => d.date))
-        console.log(d3.min(this.rawData, d => d.date), rawDataFullRange)
       } else if (this.selectedTimeStep === 'Yearly') {
         rawDataFullRange = d3.timeYear.range(d3.min(this.rawData, d => d.date), d3.max(this.rawData, d => d.date))
       } else {
@@ -536,7 +533,6 @@ export default {
             csvFormatted[i].day = formatters.mdy(csvFormatted[i].date)
             csvFormatted[i].value = +csvFormatted[i].value
           }
-          console.log('in getDataInput', csvFormatted)
           this.rawData = Object.freeze(csvFormatted)
           this.setTimeStep()
         } // may need to make this asynchronous
@@ -581,7 +577,6 @@ export default {
     },
     // chunk functions
     getOtherChunks (numDaysBrush) {
-      console.log('App:getOtherChunks')
       this.chunkDaysForRect = []
       let chunkBefore = false
       let chunkAfter = false
@@ -675,7 +670,6 @@ export default {
       this.chunkCounters = [ chunkCounterBefore - 1, chunkCounterAfter - 1 ]
     },
     updateChunks () {
-      console.log('App:updateChunks', this.brushExtent[0])//, this.scalesxBrush.domain()[0])
       let numDaysBrush = Math.round(Math.abs((this.brushExtent[1] - this.brushExtent[0]) / oneDay))
       let numDaysBeginningToBrush = Math.round(Math.abs((this.brushExtent[0] - this.scalesxBrush.domain()[0]) / oneDay))
       let numDaysBrushToEnd = Math.round(Math.abs((this.scalesxBrush.domain()[1] - this.brushExtent[1]) / oneDay))
@@ -696,7 +690,6 @@ export default {
       }
     },
     updateFilterChunk () {
-      console.log('App:updateFilterChunk:start')
       this.filterDaysForRect = []
       this.filterDaysForRect.push({
         start: this.scalesxBrush(this.brushExtent[0]),
@@ -704,15 +697,12 @@ export default {
       })
 
       this.filterMean = { minYear: this.brushExtent[0], valueMean: d3.mean(this.brushedData.map(d => d.value)) }
-      console.log('App:updateFilterChunk:end', this.filterDaysForRect)
     },
     updateCumulAll (d) {
-      console.log('App:updateCumulAll')
       this.maxCumulAll.push(this.getMaxCumul(d))
       this.minCumulAll.push(this.getMinCumul(d))
     },
     emptyCumulAll () {
-      console.log('App:emptyCumulAll')
       this.maxCumulAll = []
       this.minCumulAll = []
     },

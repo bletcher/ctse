@@ -53,7 +53,6 @@ export default {
       this.initializeAllPointsChart()
     },
     'selectedDepVar' () {
-      console.log('AllPointsChart:watch:selectedDepVar')
       this.initializeAllPointsChart()
     }
   },

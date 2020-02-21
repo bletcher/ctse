@@ -116,11 +116,9 @@ export default {
       this.initializeTimeSeriesChart()
     },
     'extent' () {
-      console.log('TimeSeriesChart:watch:extent')
       this.updateTimeseriesChart()
     },
     'selectedDepVar' () {
-      console.log('TimeSeriesChart:watch:selectedDepVar')
       this.updateTimeseriesChart()
     }
   },
@@ -232,7 +230,6 @@ export default {
         .attr('stroke-opacity', 0.6)
     },
     updateTimeseriesChart () {
-      console.log('updateTimeseriesChart:start')
       this.scales.x.domain(this.extent)
       this.scales.y.domain(d3.extent(this.brushedData, d => d.value)).nice()
 
