@@ -113,14 +113,14 @@
         <v-list
           class="grey lighten-2"
         >
-          <v-combobox
-            :items="depVarNames"
+          <v-text-field
             v-model="selectedDepVar"
-            label="Edit dependent variable name"
+            hint="Edit dependent variable name"
+            persistent-hint
             prepend-icon="mdi-chart-line"
             class="pa-4 pt-8 pb-0"
           >
-          </v-combobox>
+          </v-text-field>
           <v-divider
             dark
             class="my-3 white"
@@ -308,8 +308,8 @@ export default {
     fileReaderIn: null,
     selectedFileNames: ['OregonTemp.csv', 'co2MaunaLoa.csv', 'BradleyPrecipInches.csv', 'BradleySnow_mm.csv', 'lakeSimulation.csv', 'globalTempAnnual.csv', 'globalTempMonthly.csv'],
     selectedFileName: null,
-    depVarNames: ['Temperature (C)', 'Temperature (F)', 'CO2', 'Stream flow', 'Precipitation (mm)', 'Precipitation (in)'],
-    selectedDepVar: 'Temperature (C)',
+    depVarNames: ['Temperature (C)', 'CO2', 'Precipitation (in)', 'Precipitation (mm)', 'Stream flow', 'Temperature (F)', 'Temperature (F)'],
+    selectedDepVar: 'Value',
     startDate: null,
     endDate: null,
     startDateMenu: false,
@@ -495,6 +495,9 @@ export default {
       } else {
         parseDate = d3.timeParse('%-m/%-d/%Y')
       }
+
+      let fileNameIndex = this.selectedFileNames.indexOf(this.selectedFileName)
+      this.selectedDepVar = this.depVarNames[fileNameIndex]
 
       return d3.csv('data/' + this.selectedFileName, d => {
         d.date = parseDate(d.date)
