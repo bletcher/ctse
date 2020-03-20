@@ -61,6 +61,7 @@
                 <p><b>lakeSimulation</b>: Daily lake temperature from a simulation, pers. comm. Jordan Read, USGS</p>
                 <p><b>globalTempAnnual</b>: Annual global temperature from PAGES2K consortium <a href="https://figshare.com/articles/Reconstruction_ensemble_median_and_95_range/8143094" target="_blank">NOAA</a></p>
                 <p><b>globalTempMonthly</b>: Montlhy global temperature from NOAA <a href="https://data.giss.nasa.gov/gistemp/" target="_blank">NOAA</a></p>
+                <p><b>reconstructedPrecip</b>: Annual reconstructed precipitation for growing season (May to August) from Laura Smith (University of Tennessee). Based on tree ring data <a href="" target="_blank">UT</a></p>
               </v-card-text>
             </v-card>
           </v-dialog>
@@ -115,7 +116,7 @@
         >
           <v-text-field
             v-model="selectedDepVar"
-            hint="Edit dependent variable name"
+            hint="Change variable name on graph"
             persistent-hint
             prepend-icon="mdi-chart-line"
             class="pa-4 pt-8 pb-0"
@@ -262,6 +263,16 @@
           </div>
         </v-card>
       </v-container>
+      <v-dialog v-model="dialogs.showIntro">
+        <v-card>
+          <p>test</p>
+          <v-img
+            src="./assets/intro.png"
+            
+          >
+          </v-img>
+        </v-card>
+      </v-dialog>
     </v-content>
   </v-app>
 </template>
@@ -306,9 +317,9 @@ export default {
     movingMeanWindow: 10,
     inputFileName: null,
     fileReaderIn: null,
-    selectedFileNames: ['OregonTemp.csv', 'co2MaunaLoa.csv', 'BradleyPrecipInches.csv', 'BradleySnow_mm.csv', 'lakeSimulation.csv', 'globalTempAnnual.csv', 'globalTempMonthly.csv'],
+    selectedFileNames: ['OregonTemp.csv', 'co2MaunaLoa.csv', 'BradleyPrecipInches.csv', 'BradleySnow_mm.csv', 'lakeSimulation.csv', 'globalTempAnnual.csv', 'globalTempMonthly.csv', 'reconstructedPrecip.csv'],
     selectedFileName: null,
-    depVarNames: ['Temperature (C)', 'CO2', 'Precipitation (in)', 'Precipitation (mm)', 'Stream flow', 'Temperature (F)', 'Temperature (F)'],
+    depVarNames: ['Temperature (C)', 'CO2', 'Precipitation (in)', 'Precipitation (mm)', 'Stream flow', 'Temperature (F)', 'Temperature (F)', 'Precipitation (mm)'],
     selectedDepVar: 'Value',
     startDate: null,
     endDate: null,
@@ -320,7 +331,8 @@ export default {
     selectedTimeStep: null,
     drawer: true,
     dialogs: {
-      about: false
+      about: false,
+      showIntro: false
     },
     minCumulAll: [],
     minOfMinCumul: null,
