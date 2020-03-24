@@ -6,7 +6,6 @@
       :value="overlayValue"
     >
     <p>Means chart not shown for less than 3 chunks</p>
-    <p>For now, if > 3 chunks, click on the brush to activate the chart for the first time</p>
     </v-overlay>
   </div>
 </template>
@@ -50,7 +49,6 @@ export default {
     }
   },
   data: () => ({
-    filterMean: null,
     svgMeans: null,
     means: null,
     widthMax: 960,
@@ -72,6 +70,15 @@ export default {
     overlayValue: true
   }),
   mounted () {
+    console.log('mounted:meansChart')
+    if (this.numChunks > 1) {
+      this.overlayValue = false
+      this.initializeMeansChart()
+      this.updateMeansChart()
+    } else {
+      d3.select('.means-chart').selectAll('svg > *').remove()
+      this.overlayValue = true
+    }
   },
   created () {
     console.log('created:meansChart')

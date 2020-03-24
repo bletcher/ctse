@@ -127,7 +127,7 @@ export default {
           enter => enter.append('path')
             .attr('class', 'handle--custom')
             .attr('fill', '#aaa')
-            .attr('fill-opacity', 0.8)
+            .attr('fill-opacity', 0.6)
             .attr('stroke', '#555')
             .attr('stroke-width', 1.5)
             .attr('cursor', 'ew-resize')
