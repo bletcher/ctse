@@ -268,7 +268,6 @@
           <p>test</p>
           <v-img
             src="./assets/intro.png"
-            
           >
           </v-img>
         </v-card>

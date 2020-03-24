@@ -42,7 +42,9 @@ export default {
     },
     svgElements: {
       context: null
-    }
+    },
+    brushHandle: null,
+    arc: null
   }),
   mounted () {
     this.initializeBrushChart()
@@ -62,7 +64,7 @@ export default {
     brush () {
       return d3.brushX()
         .extent([[0, 0], [this.width, this.height]])
-        .on('brush end', this.brushed)
+        .on('start brush end', this.brushed)
     }
   },
   methods: {
@@ -111,6 +113,30 @@ export default {
         .attr('class', 'rectWindow')
         .append('rect')
         .attr('display', 'none')
+
+      this.arc = d3.arc()
+        .innerRadius(0)
+        .outerRadius(this.height / 4) // - this.margin.top - this.margin.bottom) / 2)
+        .startAngle(0)
+        .endAngle((d, i) => i ? Math.PI : -Math.PI)
+
+      this.brushHandle = (g, selection) => g
+        .selectAll('.handle--custom')
+        .data([{ type: 'w' }, { type: 'e' }])
+        .join(
+          enter => enter.append('path')
+            .attr('class', 'handle--custom')
+            .attr('fill', '#aaa')
+            .attr('fill-opacity', 0.8)
+            .attr('stroke', '#555')
+            .attr('stroke-width', 1.5)
+            .attr('cursor', 'ew-resize')
+            .attr('d', this.arc)
+        )
+        .attr('display', selection === null ? 'none' : null)
+        .attr('transform', selection === null ? null : (d, i) => `translate(${selection[i]},${(this.height) / 2})`)
+
+      d3.select('.brush').call(this.brushHandle, this.scales.x.range())
     },
     updateBrushChart () {
       this.svgElements.context.select('.brush')
@@ -122,11 +148,14 @@ export default {
         .x(d => scales.x(d.date))
         .y(d => scales.y(d.value))
     },
-    brushed () {
+    brushed (d, i, n) {
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') return
       if (!d3.event.sourceEvent) return // don't emit new brushExtent if brush updated with datePicker
       let s = d3.event.selection || this.scales.x.range()
       let brushExtent = s.map(this.scales.x.invert, this.scales.x)
+
+      d3.select(n[0]).call(this.brushHandle, s)
+
       this.$emit('brushed', brushExtent)
     }
   }

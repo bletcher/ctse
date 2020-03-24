@@ -294,7 +294,6 @@ export default {
         .attr('stroke-linejoin', 'round')
         .attr('stroke-linecap', 'round')
         .attr('d', this.lineChunks(this.scales))
-        .on('mousemove', this.plotDot)
         .on('mouseenter', this.enteredChunkLine)
         .on('mouseleave', this.leftChunkLine)
 
@@ -343,7 +342,7 @@ export default {
       return rectsF[0]
     },
     colorChunkLines (d, i) {
-      if (d.beforeNotAfter) {
+      if (d[0].beforeNotAfter) {
         let r = d3.range(0, this.chunkCounters[0]) // reverse the order because before chunks are counted from right to left
         return d3.interpolateViridis(r[this.chunkCounters[0] - i - 1] / this.numChunks)
       } else {
