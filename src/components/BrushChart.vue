@@ -141,6 +141,7 @@ export default {
     updateBrushChart () {
       this.svgElements.context.select('.brush')
         .call(this.brush.move, this.extent.map(this.scales.x, this.scales.x.invert))
+        .call(this.brushHandle, this.extent.map(this.scales.x, this.scales.x.invert))
     },
     line (scales) {
       return d3.line()

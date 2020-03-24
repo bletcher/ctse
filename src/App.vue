@@ -11,7 +11,11 @@
         <span class="text-uppercase overline ml-3">Alpha Version</span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn text small href="https://ecosheds.org">
+      <v-btn text medium @click="dialogs.showIntro = true">
+        Welcome
+      </v-btn>
+
+      <v-btn text medium href="https://ecosheds.org">
         <v-icon small left>mdi-home</v-icon> SHEDS
       </v-btn>
     </v-app-bar>
@@ -263,15 +267,37 @@
           </div>
         </v-card>
       </v-container>
+
       <v-dialog v-model="dialogs.showIntro">
         <v-card>
-          <p>test</p>
-          <v-img
-            src="./assets/intro.png"
-          >
-          </v-img>
+          <v-toolbar color="primary" dark>
+            <span class="title">Welcome to the Time Series Explorer</span>
+            <v-spacer></v-spacer>
+            <v-btn icon small class="mr-0" @click="dialogs.showIntro = false"><v-icon>mdi-close</v-icon></v-btn>
+          </v-toolbar>
+
+          <v-card-text class="body-1 py-8">
+            <p>
+              The Time Series Explorer (TSE) is an interactive data visualization tool for exploring
+              patterns in time series data.
+            </p>
+            <v-alert outlined prominent class="mt-8 mb-8 py-2" color="primary">
+              <div class="title">Seasonal comparisons of time series data are sensitive to the start and end dates of the time window</div>
+                TSE lets you explore time series data with flexible time windows
+            </v-alert>
+            <p>
+              Built by <a href="https://www.usgs.gov/staff-profiles/benjamin-h-letcher?qt-staff_profile_science_products=0#qt-staff_profile_science_products" target="_blank">Benjamin Letcher, PhD (USGS)</a>
+              and <a href="https://walkerenvres.com" target="_blank">Jeffrey D Walker, PhD (Walker Environmental Research)</a>
+            </p>
+          </v-card-text>
+
+          <v-card-actions class="mx-4">
+            <v-spacer></v-spacer>
+            <v-btn text @click="dialogs.showIntro = false">close</v-btn>
+          </v-card-actions>
         </v-card>
       </v-dialog>
+
     </v-content>
   </v-app>
 </template>
@@ -331,7 +357,7 @@ export default {
     drawer: true,
     dialogs: {
       about: false,
-      showIntro: false
+      showIntro: true
     },
     minCumulAll: [],
     minOfMinCumul: null,
