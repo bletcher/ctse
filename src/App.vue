@@ -11,8 +11,8 @@
         <span class="text-uppercase overline ml-3">Alpha Version</span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn text medium @click="dialogs.showIntro = true">
-        Welcome
+      <v-btn class="mr-6" text medium @click="dialogs.showIntro = true">
+        welcome
       </v-btn>
 
       <v-btn text medium href="https://ecosheds.org">
@@ -268,22 +268,41 @@
         </v-card>
       </v-container>
 
-      <v-dialog v-model="dialogs.showIntro">
+      <v-dialog v-model="dialogs.showIntro" width="900" id="intro">
         <v-card>
           <v-toolbar color="primary" dark>
-            <span class="title">Welcome to the Time Series Explorer</span>
+            <span class="title">Welcome to the Time Series Explorer (TSE)</span>
             <v-spacer></v-spacer>
             <v-btn icon small class="mr-0" @click="dialogs.showIntro = false"><v-icon>mdi-close</v-icon></v-btn>
           </v-toolbar>
 
           <v-card-text class="body-1 py-8">
             <p>
-              The Time Series Explorer (TSE) is an interactive data visualization tool for exploring
-              patterns in time series data.
+              <strong>The Time Series Explorer is an interactive data visualization tool for exploring
+              patterns in time series data</strong>
             </p>
             <v-alert outlined prominent class="mt-8 mb-8 py-2" color="primary">
-              <div class="title">Seasonal comparisons of time series data are sensitive to the start and end dates of the time window</div>
-                TSE lets you explore time series data with flexible time windows
+              <v-text class="title">TSE compares time series data for a selected time window across years</v-text>
+              <v-container>
+                <v-row>
+                  <v-col>
+                    <v-img
+                      width="400"
+                      src="./assets/tse3.gif"
+                    >
+                    </v-img>
+                  </v-col>
+
+                  <v-col>
+                    <v-card-text style="color:#555">
+                      <p>Seasonal comparisons of time series data are sensitive to the <u>start</u> and <u>end</u> dates of the time window</p>
+                      <p>Move the time window to show the selected time series data (blue in the big graph), the summed time series data (red)
+                        and the corresponding summed data for other years (other colors)</p>
+                      <p>Notice how the height of summed red line changes dramatically if the blue spike is included or not</p>
+                    </v-card-text>
+                  </v-col>
+                </v-row>
+              </v-container>
             </v-alert>
             <p>
               Built by <a href="https://www.usgs.gov/staff-profiles/benjamin-h-letcher?qt-staff_profile_science_products=0#qt-staff_profile_science_products" target="_blank">Benjamin Letcher, PhD (USGS)</a>
@@ -295,6 +314,21 @@
             <v-spacer></v-spacer>
             <v-btn text @click="dialogs.showIntro = false">close</v-btn>
           </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      <v-dialog v-model="dialogs.loading" width="400" id="loading">
+        <v-card>
+          <v-toolbar color="primary" dark class="mb-6">
+            <span class="title">Info</span>
+            <v-spacer></v-spacer>
+            <v-btn icon small class="mr-0" @click="dialogs.loading = false"><v-icon>mdi-close</v-icon></v-btn>
+          </v-toolbar>
+
+          <v-card-text>
+            <v-progress-circular :size="32" :width="5" indeterminate color="primary"></v-progress-circular>
+            <span class="headline ml-4" style="vertical-align:middle">Loading Data...</span>
+          </v-card-text>
         </v-card>
       </v-dialog>
 
@@ -357,7 +391,8 @@ export default {
     drawer: true,
     dialogs: {
       about: false,
-      showIntro: true
+      showIntro: true,
+      loading: false
     },
     minCumulAll: [],
     minOfMinCumul: null,
@@ -525,6 +560,7 @@ export default {
     },
     getData () {
       console.log('getData:start')
+      this.dialogs.loading = true
 
       let parseDate = null
       if (this.selectedFileName === 'mitchellFromSHEDS.csv') {
@@ -545,11 +581,13 @@ export default {
         .then(dat => {
           this.rawData = Object.freeze(dat)
           this.setTimeStep()
+          this.dialogs.loading = false
         })
         .catch(error => console.error(error))
     },
     getDataInput (e) {
       console.log('loadCSV', this.inputFileName)
+      this.dialogs.loading = true
 
       let parseDate = null
 
@@ -575,6 +613,7 @@ export default {
           }
           this.rawData = Object.freeze(csvFormatted)
           this.setTimeStep()
+          this.dialogs.loading = false
         } // may need to make this asynchronous
         reader.onerror = function (evt) {
           if (evt.target.error.name === 'NotReadableError') {
