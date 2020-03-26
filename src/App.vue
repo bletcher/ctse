@@ -336,12 +336,12 @@
           <v-list-item-content>
             <div class="overline mb-4">Info</div>
             <v-list-item-title class="headline mb-1">
-              <v-progress-circular :size="32" :width="10" indeterminate color="primary"></v-progress-circular>
+              <v-progress-circular :size="32" :width="5" indeterminate color="primary"></v-progress-circular>
               <span class="headline ml-4" style="vertical-align:middle">Loading Data...</span>
             </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-      </v-card>  
+      </v-card>
 
     </v-content>
   </v-app>
