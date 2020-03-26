@@ -140,6 +140,7 @@
           </v-select>
         </v-list>
       </v-navigation-drawer>
+
       <v-container
         v-if="filledData"
       >
@@ -317,20 +318,30 @@
         </v-card>
       </v-dialog>
 
-      <v-dialog v-model="dialogs.loading" width="400" id="loading">
-        <v-card>
-          <v-toolbar color="primary" dark class="mb-6">
-            <span class="title">Info</span>
-            <v-spacer></v-spacer>
-            <v-btn icon small class="mr-0" @click="dialogs.loading = false"><v-icon>mdi-close</v-icon></v-btn>
-          </v-toolbar>
+      <v-card v-if=false max-width="400" class="mx-auto" id="loading">
+        <v-toolbar color="primary" dark class="mb-6">
+          <span class="title">Info</span>
+          <v-spacer></v-spacer>
+          <v-btn icon small class="mr-0" @click="dialogs.loading = false"><v-icon>mdi-close</v-icon></v-btn>
+        </v-toolbar>
 
-          <v-card-text>
-            <v-progress-circular :size="32" :width="5" indeterminate color="primary"></v-progress-circular>
-            <span class="headline ml-4" style="vertical-align:middle">Loading Data...</span>
-          </v-card-text>
-        </v-card>
-      </v-dialog>
+        <v-card-text>
+          <v-progress-circular :size="32" :width="5" indeterminate color="primary"></v-progress-circular>
+          <span class="headline ml-4" style="vertical-align:middle">Loading Data...</span>
+        </v-card-text>
+      </v-card>
+
+      <v-card v-if="dialogs.loading" max-width="320" class="mx-auto" id="loading">
+        <v-list-item two-line>
+          <v-list-item-content>
+            <div class="overline mb-4">Info</div>
+            <v-list-item-title class="headline mb-1">
+              <v-progress-circular :size="32" :width="10" indeterminate color="primary"></v-progress-circular>
+              <span class="headline ml-4" style="vertical-align:middle">Loading Data...</span>
+            </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-card>  
 
     </v-content>
   </v-app>
@@ -410,11 +421,13 @@ export default {
   },
   watch: {
     selectedFileName () {
+      this.dialogs.loading = true
       this.getData()
       this.inputFileName = null
     },
     inputFileName () {
       if (this.inputFileName) {
+        this.dialogs.loading = true
         this.getDataInput()
         this.selectedFileName = null
       }
@@ -560,7 +573,6 @@ export default {
     },
     getData () {
       console.log('getData:start')
-      this.dialogs.loading = true
 
       let parseDate = null
       if (this.selectedFileName === 'mitchellFromSHEDS.csv') {
@@ -587,7 +599,6 @@ export default {
     },
     getDataInput (e) {
       console.log('loadCSV', this.inputFileName)
-      this.dialogs.loading = true
 
       let parseDate = null
 
