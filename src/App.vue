@@ -8,7 +8,7 @@
         <span class="font-weight-light px-2">|</span>
         <span class="font-weight-light">Time Series Explorer</span>
         <!-- <span class="font-weight-light px-2">|</span> -->
-        <span class="text-uppercase overline ml-3">Alpha Version</span>
+        <span class="text-uppercase overline ml-3">Beta Version</span>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn class="mr-6" text medium @click="dialogs.showIntro = true">
@@ -28,13 +28,15 @@
       >
         <v-list
           class="grey lighten-4"
+          id="datafiles"
         >
           <v-select
-            label="Select an example CSV file"
+            label="Select a CSV file"
             :items="selectedFileNames"
             v-model="selectedFileName"
             prepend-icon="mdi-file-upload-outline"
             class="pa-4 pt-6 pb-0"
+            id="selectFileName"
           >
           </v-select>
 
@@ -43,7 +45,7 @@
             scrollable
             width="660">
             <template v-slot:activator="{ on }">
-              <v-btn v-on="on" x-small top rounded :style="{left: '50%', transform:'translateX(-50%)'}">
+              <v-btn v-on="on" x-small top rounded :style="{left: '50%', transform:'translateX(-50%)'}" id="dataSourcesButton">
                 <v-icon size="16">mdi-information-outline</v-icon> Data sources
               </v-btn>
             </template>
@@ -81,6 +83,7 @@
             accept=".csv"
             v-model="inputFileName"
             class="pa-4 pt-6 pb-0"
+            id="uploadCSV"
           >
           </v-file-input>
 
@@ -269,7 +272,17 @@
         </v-card>
       </v-container>
 
-      <v-dialog v-model="dialogs.showIntro" width="900" id="intro">
+      <v-tour
+        name="myTour"
+        :steps="steps"
+        >
+      </v-tour>
+
+      <v-dialog
+        v-model="dialogs.showIntro"
+        width="900"
+        id="intro"
+        >
         <v-card>
           <v-toolbar color="primary" dark>
             <span class="title">Welcome to the Time Series Explorer (TSE)</span>
@@ -278,43 +291,42 @@
           </v-toolbar>
 
           <v-card-text class="body-1 py-8">
-            <p>
-              <strong>The Time Series Explorer is an interactive data visualization tool for exploring
-              patterns in time series data</strong>
-            </p>
-            <v-alert outlined prominent class="mt-8 mb-8 py-2" color="primary">
-              <v-text class="title">TSE compares time series data for a selected time window across years</v-text>
+            <v-card-text class="headline">TSE is an interactive data visualization tool for exploring
+            patterns in time series data
+            </v-card-text>
+              <v-alert outlined prominent class="mt-8 mb-8 py-2" color="primary">
               <v-container>
-                <v-row>
-                  <v-col>
-                    <v-img
-                      width="400"
-                      src="./assets/tse3.gif"
-                    >
-                    </v-img>
-                  </v-col>
+                <v-card-text class="mb-2 title" style="color:#326ad1">TSE compares time series data for a selected time window across years</v-card-text>
+                  <v-row>
+                    <v-col>
+                      <v-img
+                        width="400"
+                        src="./assets/tse3.gif"
+                      >
+                      </v-img>
+                    </v-col>
 
-                  <v-col>
-                    <v-card-text style="color:#555">
-                      <p>Seasonal comparisons of time series data are sensitive to the <u>start</u> and <u>end</u> dates of the time window</p>
-                      <p>Move the time window to show the selected time series data (blue in the big graph), the summed time series data (red)
-                        and the corresponding summed data for other years (other colors)</p>
-                      <p>Notice how the height of summed red line changes dramatically if the blue spike is included or not</p>
-                    </v-card-text>
-                  </v-col>
-                </v-row>
-              </v-container>
-            </v-alert>
-            <p>
+                    <v-col>
+                      <v-card-text style="color:#555">
+                        <p>Seasonal comparisons of time series data are sensitive to the <u>start</u> and <u>end</u> dates of the time window</p>
+                        <p>Move the time window to show the selected time series data (blue in the big graph), the summed time series data (red)
+                          and the corresponding summed data for other years (other colors)</p>
+                        <p>Notice how the height of summed red line changes dramatically if the blue spike is included or not</p>
+                      </v-card-text>
+                    </v-col>
+                  </v-row>
+                </v-container>
+              </v-alert>
+            <v-card-text class="title mb-4">
+              <strong>START by selecting or uploading a data file.</strong>
+            </v-card-text>
+            <hr>
+            <p></p>
+            <v-card-text>
               Built by <a href="https://www.usgs.gov/staff-profiles/benjamin-h-letcher?qt-staff_profile_science_products=0#qt-staff_profile_science_products" target="_blank">Benjamin Letcher, PhD (USGS)</a>
               and <a href="https://walkerenvres.com" target="_blank">Jeffrey D Walker, PhD (Walker Environmental Research)</a>
-            </p>
+            </v-card-text>
           </v-card-text>
-
-          <v-card-actions class="mx-4">
-            <v-spacer></v-spacer>
-            <v-btn text @click="dialogs.showIntro = false">close</v-btn>
-          </v-card-actions>
         </v-card>
       </v-dialog>
 
@@ -331,17 +343,21 @@
         </v-card-text>
       </v-card>
 
+      <container fluid>
+        <v-row align="center">
       <v-card v-if="dialogs.loading" max-width="320" class="mx-auto" id="loading">
         <v-list-item two-line>
           <v-list-item-content>
             <div class="overline mb-4">Info</div>
             <v-list-item-title class="headline mb-1">
               <v-progress-circular :size="32" :width="5" indeterminate color="primary"></v-progress-circular>
-              <span class="headline ml-4" style="vertical-align:middle">Loading Data...</span>
+              <span class="headline ml-4" style="vertical-align:middle">Loading data...</span>
             </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-card>
+      </v-row>
+</container>
 
     </v-content>
   </v-app>
@@ -415,9 +431,22 @@ export default {
     chunkDaysForRect: [],
     chunkMeans: [],
     chunkCounters: null,
-    filterMean: {}
+    filterMean: {},
+    steps: [
+      {
+        target: '#uploadCSV',
+        header: {
+          title: 'Get Started'
+        },
+        content: `Load an existing file or upload you own file`,
+        params: {
+          placement: 'auto-end' // Any valid Popper.js placement. See https://popper.js.org/popper-documentation.html#Popper.placements
+        }
+      }
+    ]
   }),
   mounted () {
+    // this.$tours['myTour'].start()
   },
   watch: {
     selectedFileName () {
