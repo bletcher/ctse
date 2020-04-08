@@ -27,7 +27,7 @@
         clipped
       >
         <v-list
-          class="grey lighten-4"
+          class="grey lighten-4 pa-4 pl-2"
           id="datafiles"
         >
           <v-select
@@ -119,14 +119,14 @@
         ></v-divider>
 
         <v-list
-          class="grey lighten-2"
+          class="grey lighten-2 pa-4 pl-2"
         >
           <v-text-field
             v-model="selectedDepVar"
             hint="Change variable name on graph"
             persistent-hint
             prepend-icon="mdi-chart-line"
-            class="pa-4 pt-8 pb-0"
+            class="pa-3"
           >
           </v-text-field>
           <v-divider
@@ -138,7 +138,7 @@
             v-model="selectedTimeStep"
             label="Time step"
             prepend-icon="mdi-timer"
-            class="pa-4 pt-8 pb-0"
+            class="pa-4 pt-6 pb-0"
           >
           </v-select>
         </v-list>
@@ -296,7 +296,7 @@
             </v-card-text>
               <v-alert outlined prominent class="mt-8 mb-8 py-2" color="primary">
               <v-container>
-                <v-card-text class="mb-2 title" style="color:#326ad1">TSE compares time series data for a selected time window across years</v-card-text>
+                <v-card-text class="mb-2 title" style="color:#2770ab">TSE compares time series data for a selected time window across years</v-card-text>
                   <v-row>
                     <v-col>
                       <v-img
