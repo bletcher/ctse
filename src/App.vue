@@ -60,14 +60,14 @@
               </v-toolbar>
 
               <v-card-text class="mt-2">
-                <p><b>oregonTemp</b>: Daily air temperature from Malheur Branch experiment station (OR) <a href="https://www.ncdc.noaa.gov/cdo-web/datasets/GHCND/stations/GHCND:USC00355160/detail" target="_blank">NOAA</a></p>
                 <p><b>co2MaunaLoa</b>: Monthly CO2 concentration at Mauna Loa <a href="https://www.esrl.noaa.gov/gmd/ccgg/trends/data.html" target="_blank">NOAA</a></p>
+                <p><b>globalTempAnnual</b>: Annual global temperature from PAGES2K consortium <a href="https://figshare.com/articles/Reconstruction_ensemble_median_and_95_range/8143094" target="_blank">NOAA</a></p>
+                <p><b>globalTempMonthly</b>: Montlhy global temperature from NOAA <a href="https://data.giss.nasa.gov/gistemp/" target="_blank">NOAA</a></p>
                 <p><b>BradleyPrecipInches</b>: Daily precipitation at Bradley airport (CT) <a href="https://www.ncdc.noaa.gov/cdo-web/datasets/GHCND/stations/GHCND:USW00014740/detail" target="_blank">NOAA</a></p>
                 <p><b>BradleySnow_mm</b>: Daily snowfall at Bradley airport (CT) <a href="https://www.ncdc.noaa.gov/cdo-web/datasets/GHCND/stations/GHCND:USW00014740/detail" target="_blank">NOAA</a></p>
                 <p><b>lakeSimulation</b>: Daily lake temperature from a simulation, pers. comm. Jordan Read, USGS</p>
-                <p><b>globalTempAnnual</b>: Annual global temperature from PAGES2K consortium <a href="https://figshare.com/articles/Reconstruction_ensemble_median_and_95_range/8143094" target="_blank">NOAA</a></p>
-                <p><b>globalTempMonthly</b>: Montlhy global temperature from NOAA <a href="https://data.giss.nasa.gov/gistemp/" target="_blank">NOAA</a></p>
                 <p><b>reconstructedPrecip</b>: Annual reconstructed precipitation for growing season (May to August) from Laura Smith (University of Tennessee). Based on tree ring data <a href="" target="_blank">UT</a></p>
+                <p><b>oregonTemp</b>: Daily air temperature from Malheur Branch experiment station (OR) <a href="https://www.ncdc.noaa.gov/cdo-web/datasets/GHCND/stations/GHCND:USC00355160/detail" target="_blank">NOAA</a></p>
               </v-card-text>
             </v-card>
           </v-dialog>
@@ -232,7 +232,7 @@
                   <template v-slot:activator="{ on }">
                     <v-text-field
                       v-model="startDate"
-                      label="Start date"
+                      label="Filter start date:"
                       hide-details
                       v-on="on"
                     ></v-text-field>
@@ -255,7 +255,7 @@
                   <template v-slot:activator="{ on }">
                     <v-text-field
                       v-model="endDate"
-                      label="End date"
+                      label="Filter end date:"
                       hide-details
                       v-on="on"
                     ></v-text-field>
@@ -403,9 +403,11 @@ export default {
     movingMeanWindow: 10,
     inputFileName: null,
     fileReaderIn: null,
-    selectedFileNames: ['OregonTemp.csv', 'co2MaunaLoa.csv', 'BradleyPrecipInches.csv', 'BradleySnow_mm.csv', 'lakeSimulation.csv', 'globalTempAnnual.csv', 'globalTempMonthly.csv', 'reconstructedPrecip.csv'],
+    selectedFileNames: ['co2MaunaLoa.csv', 'globalTempAnnual.csv', 'globalTempMonthly.csv', 'BradleyPrecipInches.csv', 'BradleySnow_mm.csv',
+      'lakeSimulation.csv', 'reconstructedPrecip.csv', 'OregonTemp.csv'],
     selectedFileName: null,
-    depVarNames: ['Temperature (C)', 'CO2', 'Precipitation (in)', 'Precipitation (mm)', 'Stream flow', 'Temperature (F)', 'Temperature (F)', 'Precipitation (mm)'],
+    depVarNames: ['CO2', 'Temperature (F)', 'Temperature (F)', 'Precipitation (in)', 'Precipitation (mm)', 
+      'Temperature (C)', 'Precipitation (mm)', 'Temperature (C)'],
     selectedDepVar: 'Value',
     startDate: null,
     endDate: null,
