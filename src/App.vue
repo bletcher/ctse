@@ -155,9 +155,42 @@
           <v-tabs
             v-model="tab" background-color="#edebf2"
           >
-            <v-tab href="#means">Means</v-tab>
-            <v-tab href="#timeseries">Time series</v-tab>
-            <v-tab href="#doy">By day of year</v-tab>
+            <v-tab href="#doy">By day of year
+              <v-tooltip bottom open-delay="100" max-width="400">
+                <template v-slot:activator="{ on }">
+                  <v-btn small icon v-on="on" class="align-self-center">
+                    <v-icon small>mdi-alert-circle-outline</v-icon>
+                  </v-btn>
+                </template>
+                The <i>By Day of Year</i> chart shows the raw data across 'day of year' with points color-coded by year. Mousing over a point shows the observation date.
+              </v-tooltip>
+            </v-tab>
+            <v-tab href="#timeseries">Time series
+              <v-tooltip bottom open-delay="100" max-width="600">
+                <template v-slot:activator="{ on }">
+                  <v-btn small icon v-on="on" class="align-self-center">
+                    <v-icon small>mdi-alert-circle-outline</v-icon>
+                  </v-btn>
+                </template>
+                The <i>Time Series</i> tab shows a chart with the time series in blue and the cumulative curve for time series in red.
+                When you slide the half-circle filter handles in the lower chart, both the time series and the cumulative curve will be updated to reflect the filter window in the upper chart.<br><br>
+                Once the filter width is narrower than 1/2 the length of the time series, time periods with the same width as the filter will be indicated before or after the filter window by bars below the filter chart.
+                Cumulative curves for the time periods will also be shown in the upper chart.<br><br>
+                Mouse over a line or a bar to highlight the corresponding bar or line in the two charts. Mousing over a line also shows the median year of the time period.
+              </v-tooltip>
+            </v-tab>
+            <v-tab href="#means">Means
+                <v-tooltip bottom open-delay="100" max-width="400">
+                  <template v-slot:activator="{ on }">
+                    <v-btn small icon v-on="on" class="align-self-center">
+                      <v-icon small>mdi-alert-circle-outline</v-icon>
+                    </v-btn>
+                  </template>
+                  The <i>Means</i> tab shows a chart for the average value for each period, including the filtered period (red) and all other time periods (other colors).
+                  Mouse over a circle to show the corresponding time period in the filter chart below.<br><br>
+                  Slope and r-squared are shown for a linear fit to the means over time. Often, a linear fit will not be appropriate for the data - the fit is shown simply as a guide to an overall trend.
+                </v-tooltip>
+            </v-tab>
           </v-tabs>
 
           <v-tabs-items v-model="tab">
@@ -235,7 +268,8 @@
                       label="Filter start date:"
                       hide-details
                       v-on="on"
-                    ></v-text-field>
+                    >
+                    </v-text-field>
                   </template>
                   <v-date-picker
                     v-model="startDate"
@@ -243,6 +277,15 @@
                   ></v-date-picker>
                 </v-menu>
               </v-col>
+
+              <v-tooltip top open-delay="100" max-width="400">
+                <template v-slot:activator="{ on }">
+                  <v-btn small icon v-on="on" class="align-self-center">
+                    <v-icon small>mdi-alert-circle-outline</v-icon>
+                  </v-btn>
+                </template>
+                Change the <i>start date</i> or <i>end date</i> manually by typing a date and then selecting from the calendar or just selecting from the calendar.
+              </v-tooltip>
 
               <v-col cols="2" sm="2" md="2" class="ml-1 grey lighten-4">
                 <v-menu
@@ -406,7 +449,7 @@ export default {
     selectedFileNames: ['co2MaunaLoa.csv', 'globalTempAnnual.csv', 'globalTempMonthly.csv', 'BradleyPrecipInches.csv', 'BradleySnow_mm.csv',
       'lakeSimulation.csv', 'reconstructedPrecip.csv', 'OregonTemp.csv'],
     selectedFileName: null,
-    depVarNames: ['CO2', 'Temperature (F)', 'Temperature (F)', 'Precipitation (in)', 'Precipitation (mm)', 
+    depVarNames: ['CO2', 'Temperature (F)', 'Temperature (F)', 'Precipitation (in)', 'Precipitation (mm)',
       'Temperature (C)', 'Precipitation (mm)', 'Temperature (C)'],
     selectedDepVar: 'Value',
     startDate: null,
