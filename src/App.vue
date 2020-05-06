@@ -7,8 +7,8 @@
         <span>SHEDS</span>
         <span class="font-weight-light px-2">|</span>
         <span class="font-weight-light">Time Series Explorer</span>
-        <!-- <span class="font-weight-light px-2">|</span> -->
-        <span class="text-uppercase overline ml-3">Beta Version</span>
+        <!-- <span class="font-weight-light px-2">|</span> 
+        <span class="text-uppercase overline ml-3">Beta Version</span> -->
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn class="mr-6" text medium @click="dialogs.showIntro = true">
@@ -144,6 +144,18 @@
         </v-list>
       </v-navigation-drawer>
 
+      <v-alert
+        v-model="alerts.show"
+        border="left"
+        close-text="Close Alert"
+        color="#2770ab"
+        dark
+        dismissible
+        class="text-center ma-4"
+      >
+        {{ alerts.message }}
+      </v-alert>
+
       <v-container
         v-if="filledData"
       >
@@ -188,7 +200,7 @@
                   </template>
                   The <i>Means</i> tab shows a chart for the average value for each period, including the filtered period (red) and all other time periods (other colors).
                   Mouse over a circle to show the corresponding time period in the filter chart below.<br><br>
-                  Slope and r-squared are shown for a linear fit to the means over time. Often, a linear fit will not be appropriate for the data - the fit is shown simply as a guide to an overall trend.
+                  Slope (per year) and r-squared are shown for a linear fit to the means over time. Often, a linear fit will not be appropriate for the data - the fit is shown simply as a guide to an overall trend.
                 </v-tooltip>
             </v-tab>
           </v-tabs>
@@ -386,21 +398,21 @@
         </v-card-text>
       </v-card>
 
-      <container fluid>
+      <v-container fluid>
         <v-row align="center">
-      <v-card v-if="dialogs.loading" max-width="320" class="mx-auto" id="loading">
-        <v-list-item two-line>
-          <v-list-item-content>
-            <div class="overline mb-4">Info</div>
-            <v-list-item-title class="headline mb-1">
-              <v-progress-circular :size="32" :width="5" indeterminate color="primary"></v-progress-circular>
-              <span class="headline ml-4" style="vertical-align:middle">Loading data...</span>
-            </v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </v-card>
-      </v-row>
-</container>
+          <v-card v-if="dialogs.loading" max-width="320" class="mx-auto" id="loading">
+            <v-list-item two-line>
+              <v-list-item-content>
+                <div class="overline mb-4">Info</div>
+                <v-list-item-title class="headline mb-1">
+                  <v-progress-circular :size="32" :width="5" indeterminate color="primary"></v-progress-circular>
+                  <span class="headline ml-4" style="vertical-align:middle">Loading data...</span>
+                </v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </v-card>
+        </v-row>
+      </v-container>
 
     </v-content>
   </v-app>
@@ -465,6 +477,10 @@ export default {
       about: false,
       showIntro: true,
       loading: false
+    },
+    alerts: {
+      show: false,
+      message: null
     },
     minCumulAll: [],
     minOfMinCumul: null,
@@ -683,12 +699,31 @@ export default {
         reader.onloadend = () => {
           let csv = reader.result
           let csvFormatted = this.csvJSON(csv)
+          let csvFormattedNames = Object.getOwnPropertyNames(csvFormatted[0])
+
+          // Headername error
+          if (csvFormattedNames[0] !== 'date' || csvFormattedNames[1] !== 'value') {
+            console.log('inHeaderError')
+            this.dialogs.loading = false
+            this.alerts.message = 'Make sure the first line of your CSV file is "date,value"'
+            this.alerts.show = true
+            return
+          }
 
           // clunky parsing for now
           if (csvFormatted[0].date.length < 11) {
             parseDate = d3.timeParse('%-m/%-d/%Y')
           } else {
             parseDate = d3.timeParse('%-m/%-d/%Y %H:%M')
+          }
+
+          // date format error
+          if (parseDate(csvFormatted[0].date) === null) {
+            console.log('inDateFormatError')
+            this.dialogs.loading = false
+            this.alerts.message = 'Make sure you have the correct date format (mm/dd/yyy)'
+            this.alerts.show = true
+            return
           }
 
           for (let i = 0; i < csvFormatted.length; i++) {
