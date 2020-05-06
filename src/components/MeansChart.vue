@@ -189,7 +189,6 @@ export default {
         .attr('x', this.width - 140)
         .attr('y', this.height - 20)
         .text('r-squared = ' + d3.format('.2r')(lr.rSquared))
-        //.text('r-squared = ' + lr.rSquared.toFixed(3))
         .attr('font-family', 'sans-serif')
 
       this.means.append('text')
@@ -197,7 +196,6 @@ export default {
         .attr('x', this.width - 112)
         .attr('y', this.height - 40)
         .text('Slope = ' + d3.format('.2r')(lr.a))
-        //.text('Slope = ' + lr.a.toFixed(3))
         .attr('font-family', 'sans-serif')
 
       this.means.exit().remove()

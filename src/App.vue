@@ -7,7 +7,7 @@
         <span>SHEDS</span>
         <span class="font-weight-light px-2">|</span>
         <span class="font-weight-light">Time Series Explorer</span>
-        <!-- <span class="font-weight-light px-2">|</span> 
+        <!-- <span class="font-weight-light px-2">|</span>
         <span class="text-uppercase overline ml-3">Beta Version</span> -->
       </v-toolbar-title>
       <v-spacer></v-spacer>
